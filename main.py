@@ -15,7 +15,7 @@ class Settings:
         self.BG_COLOR = (42, 135, 191)
 
         # Player's settings
-        self.player_speed = 6
+        self.player_speed = 5
 
 
 class Player(pygame.sprite.Sprite):
@@ -44,8 +44,14 @@ class Player(pygame.sprite.Sprite):
         self.moving_right = False
         self.moving_left = False
 
+        # Sets the gravity at the start of the game
+        self.gravity = 0
+
     def update(self):
         """Update the robot's position based on the movement flags."""
+
+        self.apply_gravity()
+
         # Update the robot's x value, no the rect
         if self.moving_right and self.rect.right <= self.screen_rect.right:
             self.x += self.settings.player_speed
@@ -54,6 +60,21 @@ class Player(pygame.sprite.Sprite):
 
         # Update rect object from self.x
         self.rect.x = self.x
+
+        print(self.gravity)
+
+    def apply_gravity(self) -> None:
+        """Moves the player towards the bottom of the screen."""
+        self.gravity += 1
+        self.rect.y += self.gravity
+
+        if self.rect.bottom >= self.screen_rect.bottom:
+            self.rect.bottom = self.screen_rect.bottom
+            self.gravity = 0
+
+    def jump(self) -> None:
+        """Reduces the gravity, causing the player to jump."""
+        self.gravity = -20
 
     def draw_me(self) -> None:
         """Draw the robot at the current location."""
@@ -105,6 +126,11 @@ class Platformer:
             self.player.moving_right = True
         elif event.key == pygame.K_LEFT:
             self.player.moving_left = True
+        elif (
+            event.key == pygame.K_SPACE
+            and self.player.rect.bottom >= self.screen.get_rect().bottom
+        ):
+            self.player.jump()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
         """Respond to key releases"""
