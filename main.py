@@ -36,10 +36,6 @@ class Player(pygame.sprite.Sprite):
         # Start the player at the bottom-left of the screen
         self.rect.bottomleft = self.screen_rect.bottomleft
 
-        # Stores the value for the robot's exact horizontal and vertical positions
-        self.x = float(self.rect.x)
-        self.y = float(self.rect.y)
-
         # Moving flags; at the start of the game the robot doesn't move
         self.moving_right = False
         self.moving_left = False
@@ -54,14 +50,9 @@ class Player(pygame.sprite.Sprite):
 
         # Update the robot's x value, no the rect
         if self.moving_right and self.rect.right <= self.screen_rect.right:
-            self.x += self.settings.player_speed
+            self.rect.x += self.settings.player_speed
         if self.moving_left and self.rect.left >= 0:
-            self.x -= self.settings.player_speed
-
-        # Update rect object from self.x
-        self.rect.x = self.x
-
-        print(self.gravity)
+            self.rect.x -= self.settings.player_speed
 
     def apply_gravity(self) -> None:
         """Moves the player towards the bottom of the screen."""
