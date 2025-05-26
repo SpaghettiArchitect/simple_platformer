@@ -138,9 +138,19 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         """Update the robot's position based on its x and y speeds."""
 
+        # Determine horizontal speed based on flags
+        if self.moving_left and not self.moving_right:
+            self.change_x = -self.settings.player_speed
+        elif self.moving_right and not self.moving_left:
+            self.change_x = self.settings.player_speed
+        else:
+            # Player stops if both keys are pressed or no keys are pressed
+            self.change_x = 0
+
         self.apply_gravity()
 
         ####### Horizontal movement and collision detection #######
+
         self.rect.x += self.change_x
 
         # See if we hit anything in the x-axis
@@ -188,17 +198,17 @@ class Player(pygame.sprite.Sprite):
         """Draw the robot at the current location."""
         self.screen.blit(self.image, self.rect)
 
-    def go_left(self) -> None:
-        """Moves the player to the left."""
-        self.change_x = -self.settings.player_speed
+    # def go_left(self) -> None:
+    #     """Moves the player to the left."""
+    #     self.change_x = -self.settings.player_speed
 
-    def go_right(self) -> None:
-        """Moves the player to the right."""
-        self.change_x = self.settings.player_speed
+    # def go_right(self) -> None:
+    #     """Moves the player to the right."""
+    #     self.change_x = self.settings.player_speed
 
-    def stop(self):
-        """Called when the player lets off the keyboard."""
-        self.change_x = 0
+    # def stop(self):
+    #     """Called when the player lets off the keyboard."""
+    #     self.change_x = 0
 
 
 class Platformer:
@@ -253,18 +263,18 @@ class Platformer:
     def _check_keydown_events(self, event: pygame.event.Event) -> None:
         """Respond to keypresses."""
         if event.key == pygame.K_RIGHT:
-            self.player.go_right()
+            self.player.moving_right = True
         elif event.key == pygame.K_LEFT:
-            self.player.go_left()
+            self.player.moving_left = True
         elif event.key == pygame.K_SPACE:
             self.player.jump()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
         """Respond to key releases"""
         if event.key == pygame.K_RIGHT:
-            self.player.stop()
+            self.player.moving_right = False
         elif event.key == pygame.K_LEFT:
-            self.player.stop()
+            self.player.moving_left = False
 
     def _update_screen(self) -> None:
         """Update all game elements and flip the screen."""
