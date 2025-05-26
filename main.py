@@ -74,8 +74,8 @@ class Level:
         for row in pattern[::-1]:
             current_y -= self.settings.BLOCK_SIZE
 
-            for block_type in row:
-                if block_type == "x":
+            for object_type in row:
+                if object_type == "X":
                     new_block = Block()
                     new_block.set_position(current_x, current_y)
                     self.block_list.add(new_block)
@@ -94,10 +94,10 @@ class Level_01(Level):
 
         # The level layout
         self.level = [
-            "___xxxx____xxxxx",
+            "___XXXX____XXXXX",
             "",
             "",
-            "xxxxxxxxxxxxxxxx",
+            "XXXXXXXXXXXXXXXX",
         ]
 
         self.create(self.level)
@@ -119,7 +119,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         # Start the player at the bottom-left of the screen
-        self.rect.bottomleft = self.screen_rect.bottomleft
+        self.rect.bottom = self.screen_rect.bottom - self.settings.BLOCK_SIZE
+        self.rect.left = self.screen_rect.left + 20
 
         # Movement flags
         self.moving_right = False
