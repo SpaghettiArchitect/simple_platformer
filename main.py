@@ -121,40 +121,62 @@ class Player(pygame.sprite.Sprite):
         # Start the player at the bottom-left of the screen
         self.rect.bottomleft = self.screen_rect.bottomleft
 
-        # Moving flags; at the start of the game the robot doesn't move
+        # Movement flags
         self.moving_right = False
         self.moving_left = False
 
-        # Sets the gravity at the start of the game
-        self.gravity = 0
+        # Speed of the player in the x and y axis; at the
+        # start of the game the player doesn't move
+        self.change_x = 0
+        self.change_y = 0
 
     def update(self):
-        """Update the robot's position based on the movement flags."""
+        """Update the robot's position based on its x and y speeds"""
 
         self.apply_gravity()
 
-        # Update the robot's x value, no the rect
-        if self.moving_right and self.rect.right <= self.screen_rect.right:
-            self.rect.x += self.settings.player_speed
-        if self.moving_left and self.rect.left >= 0:
-            self.rect.x -= self.settings.player_speed
+        # Move left or right
+        if self.moving_right:
+            self.go_right()
+        if self.moving_left:
+            self.go_left()
+
+        # Move up or down
+        self.rect.y += int(self.change_y)
 
     def apply_gravity(self) -> None:
         """Moves the player towards the bottom of the screen."""
-        self.gravity += 1
-        self.rect.y += self.gravity
+        if self.change_y == 0:
+            self.change_y = 1
+        else:
+            self.change_y += 0.35
 
-        if self.rect.bottom >= self.screen_rect.bottom:
+        if self.rect.bottom >= self.screen_rect.bottom and self.change_y >= 0:
+            self.change_y = 0
             self.rect.bottom = self.screen_rect.bottom
-            self.gravity = 0
 
     def jump(self) -> None:
-        """Reduces the gravity, causing the player to jump."""
-        self.gravity = -20
+        """Make the player jump by changing its vertical speed."""
+        if self.rect.bottom >= self.screen_rect.bottom:
+            self.change_y = -10
 
     def draw_me(self) -> None:
         """Draw the robot at the current location."""
         self.screen.blit(self.image, self.rect)
+
+    def go_left(self) -> None:
+        """Moves the player to the left."""
+        self.change_x = -self.settings.player_speed
+
+        # Apply movement
+        self.rect.x += self.change_x
+
+    def go_right(self) -> None:
+        """Moves the player to the right."""
+        self.change_x = self.settings.player_speed
+
+        # Apply movement
+        self.rect.x += self.change_x
 
 
 class Platformer:
@@ -210,10 +232,7 @@ class Platformer:
             self.player.moving_right = True
         elif event.key == pygame.K_LEFT:
             self.player.moving_left = True
-        elif (
-            event.key == pygame.K_SPACE
-            and self.player.rect.bottom >= self.screen.get_rect().bottom
-        ):
+        elif event.key == pygame.K_SPACE:
             self.player.jump()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
@@ -225,7 +244,6 @@ class Platformer:
 
     def _update_screen(self) -> None:
         """Update all game elements and flip the screen."""
-        # self.screen.fill(self.settings.BG_COLOR)
         self.current_level.update()
         self.current_level.draw()
         self.player.draw_me()
