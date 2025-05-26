@@ -125,6 +125,7 @@ class Player(pygame.sprite.Sprite):
         # Movement flags
         self.moving_right = False
         self.moving_left = False
+        self.on_ground = False
 
         # Speed of the player in the x and y axis; at the
         # start of the game the player doesn't move
@@ -135,36 +136,41 @@ class Player(pygame.sprite.Sprite):
         self.level = None
 
     def update(self):
-        """Update the robot's position based on its x and y speeds"""
+        """Update the robot's position based on its x and y speeds."""
 
         self.apply_gravity()
 
+        ####### Horizontal movement and collision detection #######
         self.rect.x += self.change_x
 
-        # See if we hit anything
+        # See if we hit anything in the x-axis
         block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
         for block in block_hit_list:
-            # If we are moving right,
-            # set our right side to the left side of the item we hit
+            # Player was moving right
             if self.change_x > 0:
                 self.rect.right = block.rect.left
+            # Player was moving left
             elif self.change_x < 0:
-                # Otherwise if we are moving left, do the opposite.
                 self.rect.left = block.rect.right
 
-        # Move up/down
+        ######## Vertical movement and collision detection ########
+        # Assume the player is not on the ground until a collision
+        # proves it
+        self.on_ground = False
         self.rect.y += self.change_y
 
-        # Check and see if we hit anything
+        # See if we hit anything in the y-axis
         block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
         for block in block_hit_list:
-            # Reset our position based on the top/bottom of the object.
+            # Player was moving down
             if self.change_y > 0:
                 self.rect.bottom = block.rect.top
+                self.on_ground = True  # Player landed on a block
+            # Player was moving up
             elif self.change_y < 0:
                 self.rect.top = block.rect.bottom
 
-            # Stop our vertical movement
+            # Stop player's vertical movement
             self.change_y = 0
 
     def apply_gravity(self) -> None:
@@ -173,17 +179,10 @@ class Player(pygame.sprite.Sprite):
 
     def jump(self) -> None:
         """Make the player jump by changing its vertical speed."""
-        # Move the player down a little to see if there's
-        # a platform beneath
-        self.rect.y += 2
-        platform_hit_list = pygame.sprite.spritecollide(
-            self, self.level.block_list, False
-        )
-        self.rect.y -= 2
-
         # If it is ok to jump, set our speed upwards
-        if platform_hit_list:
+        if self.on_ground:
             self.change_y = -15
+            self.on_ground = False  # Player is now in the air
 
     def draw_me(self) -> None:
         """Draw the robot at the current location."""
