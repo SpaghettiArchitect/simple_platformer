@@ -74,9 +74,6 @@ class Level:
         for row in pattern[::-1]:
             current_y -= self.settings.BLOCK_SIZE
 
-            if row == "":
-                continue
-
             for block_type in row:
                 if block_type == "x":
                     new_block = Block()
