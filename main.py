@@ -12,14 +12,14 @@ class Settings:
         self.SCREEN_WIDTH = 800
         self.SCREEN_HEIGHT = 500
         self.FPS = 60
-        self.BG_COLOR = (42, 135, 191)
+        self.BG_COLOR = pygame.Color(42, 135, 191)
 
         # Player's settings
         self.player_speed = 5
 
         # Block's settings
         self.BLOCK_SIZE = 50
-        self.BLOCK_COLOR = (18, 102, 79)
+        self.BLOCK_COLOR = pygame.Color(18, 102, 79)
 
         # Limits how far the player can go to the left
         # or right side of the screen until it starts to shift
@@ -30,23 +30,57 @@ class Settings:
 class Block(pygame.sprite.Sprite):
     """A class to define each block that makes the level."""
 
-    def __init__(self) -> None:
+    def __init__(self, color: pygame.Color = None, pattern: bool = True) -> None:
         """Initializes a block of a fixed size."""
         super().__init__()
 
         self.settings = Settings()
-        self.color = self.settings.BLOCK_COLOR
+
+        if not color:
+            self.color = self.settings.BLOCK_COLOR
+        else:
+            self.color = color
+
         self.size = self.settings.BLOCK_SIZE
-
         self.image = pygame.Surface((self.size, self.size))
-        self.image.fill(self.color)
-
         self.rect = self.image.get_rect()
+
+        if pattern:
+            self._draw_pattern()
+        else:
+            self.image.fill(self.color)
 
     def set_position(self, x: int, y: int) -> None:
         """Updates the position of the block."""
         self.rect.x = x
         self.rect.y = y
+
+    def _draw_pattern(self) -> None:
+        """Draws a triangular pattern inside the block."""
+        # Top triangle
+        pygame.draw.polygon(
+            self.image,
+            (self.color.r + 10, self.color.g + 10, self.color.b + 10),
+            (self.rect.topleft, self.rect.topright, self.rect.center),
+        )
+        # Right triangle
+        pygame.draw.polygon(
+            self.image,
+            self.color,
+            (self.rect.topright, self.rect.bottomright, self.rect.center),
+        )
+        # Bottom triangle
+        pygame.draw.polygon(
+            self.image,
+            (self.color.r - 10, self.color.g - 10, self.color.b - 10),
+            (self.rect.bottomleft, self.rect.bottomright, self.rect.center),
+        )
+        # Left triangle
+        pygame.draw.polygon(
+            self.image,
+            (self.color.r - 5, self.color.g - 5, self.color.b - 5),
+            (self.rect.bottomleft, self.rect.topleft, self.rect.center),
+        )
 
 
 class Level:
