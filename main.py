@@ -138,52 +138,23 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         """Update the robot's position based on its x and y speeds."""
 
-        # Determine horizontal speed based on flags
-        if self.moving_left and not self.moving_right:
-            self.change_x = -self.settings.player_speed
-        elif self.moving_right and not self.moving_left:
-            self.change_x = self.settings.player_speed
-        else:
-            # Player stops if both keys are pressed or no keys are pressed
-            self.change_x = 0
+        self._change_speed()
+        self._apply_gravity()
 
-        self.apply_gravity()
-
-        ####### Horizontal movement and collision detection #######
-
+        # Move the player left or right
         self.rect.x += self.change_x
 
-        # See if we hit anything in the x-axis
-        block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
-        for block in block_hit_list:
-            # Player was moving right
-            if self.change_x > 0:
-                self.rect.right = block.rect.left
-            # Player was moving left
-            elif self.change_x < 0:
-                self.rect.left = block.rect.right
+        self._check_horizontal_collisions()
 
-        ######## Vertical movement and collision detection ########
-        # Assume the player is not on the ground until a collision
-        # proves it
+        # Assume the player isn't touching any platform
         self.on_ground = False
+
+        # Move the player up or down
         self.rect.y += self.change_y
 
-        # See if we hit anything in the y-axis
-        block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
-        for block in block_hit_list:
-            # Player was moving down
-            if self.change_y > 0:
-                self.rect.bottom = block.rect.top
-                self.on_ground = True  # Player landed on a block
-            # Player was moving up
-            elif self.change_y < 0:
-                self.rect.top = block.rect.bottom
+        self._check_vertical_collisions()
 
-            # Stop player's vertical movement
-            self.change_y = 0
-
-    def apply_gravity(self) -> None:
+    def _apply_gravity(self) -> None:
         """Moves the player towards the bottom of the screen."""
         self.change_y += 0.6
 
@@ -198,17 +169,43 @@ class Player(pygame.sprite.Sprite):
         """Draw the robot at the current location."""
         self.screen.blit(self.image, self.rect)
 
-    # def go_left(self) -> None:
-    #     """Moves the player to the left."""
-    #     self.change_x = -self.settings.player_speed
+    def _change_speed(self) -> None:
+        """Determine horizontal speed based on movement flags."""
+        if self.moving_left and not self.moving_right:
+            self.change_x = -self.settings.player_speed
+        elif self.moving_right and not self.moving_left:
+            self.change_x = self.settings.player_speed
+        else:
+            # Player stops if both keys are pressed or no keys are pressed
+            self.change_x = 0
 
-    # def go_right(self) -> None:
-    #     """Moves the player to the right."""
-    #     self.change_x = self.settings.player_speed
+    def _check_horizontal_collisions(self) -> None:
+        """Check if the player hit anything in the x-axis. If so, update the position
+        so it doesn't go through the object."""
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
+        for block in block_hit_list:
+            # Player was moving right
+            if self.change_x > 0:
+                self.rect.right = block.rect.left
+            # Player was moving left
+            elif self.change_x < 0:
+                self.rect.left = block.rect.right
 
-    # def stop(self):
-    #     """Called when the player lets off the keyboard."""
-    #     self.change_x = 0
+    def _check_vertical_collisions(self) -> None:
+        """Check if the player hit anything in the y-axis. If so, update the position
+        so it doesn't go through the object."""
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
+        for block in block_hit_list:
+            # Player was moving down
+            if self.change_y > 0:
+                self.rect.bottom = block.rect.top
+                self.on_ground = True  # Player landed on a block
+            # Player was moving up
+            elif self.change_y < 0:
+                self.rect.top = block.rect.bottom
+
+            # Stop player's vertical movement
+            self.change_y = 0
 
 
 class Platformer:
