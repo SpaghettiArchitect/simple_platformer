@@ -51,11 +51,11 @@ class Level:
         """Initializes all sprite groups of the level."""
         self.screen = game.screen
         self.settings = game.settings
-        self.block_list = pygame.sprite.Group()
+        self.platform_list = pygame.sprite.Group()
 
     def update(self) -> None:
         """Update everything in this level."""
-        self.block_list.update()
+        self.platform_list.update()
 
     def draw(self) -> None:
         """Draw everything on this level."""
@@ -64,7 +64,7 @@ class Level:
         self.screen.fill(self.settings.BG_COLOR)
 
         # Draw all the sprites that we have
-        self.block_list.draw(self.screen)
+        self.platform_list.draw(self.screen)
 
     def create(self, pattern: list[str]) -> None:
         """Creates the structure of the level based on a string pattern."""
@@ -78,7 +78,7 @@ class Level:
                 if object_type == "X":
                     new_block = Block()
                     new_block.set_position(current_x, current_y)
-                    self.block_list.add(new_block)
+                    self.platform_list.add(new_block)
 
                 current_x += self.settings.BLOCK_SIZE
 
@@ -182,27 +182,31 @@ class Player(pygame.sprite.Sprite):
     def _check_horizontal_collisions(self) -> None:
         """Check if the player hit anything in the x-axis. If so, update the position
         so it doesn't go through the object."""
-        block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
-        for block in block_hit_list:
+        platform_hits = pygame.sprite.spritecollide(
+            self, self.level.platform_list, False
+        )
+        for platform in platform_hits:
             # Player was moving right
             if self.change_x > 0:
-                self.rect.right = block.rect.left
+                self.rect.right = platform.rect.left
             # Player was moving left
             elif self.change_x < 0:
-                self.rect.left = block.rect.right
+                self.rect.left = platform.rect.right
 
     def _check_vertical_collisions(self) -> None:
         """Check if the player hit anything in the y-axis. If so, update the position
         so it doesn't go through the object."""
-        block_hit_list = pygame.sprite.spritecollide(self, self.level.block_list, False)
-        for block in block_hit_list:
+        platform_hits = pygame.sprite.spritecollide(
+            self, self.level.platform_list, False
+        )
+        for platform in platform_hits:
             # Player was moving down
             if self.change_y > 0:
-                self.rect.bottom = block.rect.top
+                self.rect.bottom = platform.rect.top
                 self.on_ground = True  # Player landed on a block
             # Player was moving up
             elif self.change_y < 0:
-                self.rect.top = block.rect.bottom
+                self.rect.top = platform.rect.bottom
 
             # Stop player's vertical movement
             self.change_y = 0
