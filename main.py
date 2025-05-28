@@ -21,6 +21,11 @@ class Settings:
         self.BLOCK_SIZE = 50
         self.BLOCK_COLOR = (18, 102, 79)
 
+        # Limits how far the player can go to the left
+        # or right side of the screen until it starts to shift
+        self.LEFT_SCREEN_LIMIT = 100
+        self.RIGHT_SCREEN_LIMIT = self.SCREEN_WIDTH - 200
+
 
 class Block(pygame.sprite.Sprite):
     """A class to define each block that makes the level."""
@@ -53,6 +58,10 @@ class Level:
         self.settings = game.settings
         self.platform_list = pygame.sprite.Group()
 
+        # Keeps track of how much has this level been
+        # shifted left or right
+        self.level_shift = 0
+
     def update(self) -> None:
         """Update everything in this level."""
         self.platform_list.update()
@@ -84,6 +93,17 @@ class Level:
 
             current_x = 0
 
+    def shift_level(self, shift_x: int) -> None:
+        """Shifts the whole level right or left, depending of the player's movement."""
+        # Keep track of the shift amount
+        self.level_shift += shift_x
+
+        # Shift all the level sprites
+        for platform in self.platform_list:
+            platform.rect.x += shift_x
+
+        print(self.level_shift)
+
 
 class Level_01(Level):
     """A class that defines the layout of level 1."""
@@ -92,12 +112,15 @@ class Level_01(Level):
         """Creates level 1 of the game."""
         super().__init__(game)
 
+        self.level_limit = -1200
+
         # The level layout
         self.level = [
+            "___________________XX__",
             "___XXXX____XXXXX",
             "",
             "",
-            "XXXXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXXXXXXXXXXX",
         ]
 
         self.create(self.level)
@@ -120,7 +143,7 @@ class Player(pygame.sprite.Sprite):
 
         # Start the player at the bottom-left of the screen
         self.rect.bottom = self.screen_rect.bottom - self.settings.BLOCK_SIZE
-        self.rect.left = self.screen_rect.left + 20
+        self.rect.left = self.settings.LEFT_SCREEN_LIMIT
 
         # Movement flags
         self.moving_right = False
@@ -231,7 +254,7 @@ class Platformer:
         self.player = Player(self)
 
         # Create all the levels
-        self.level_list = []
+        self.level_list: list[Level] = []
         self.level_list.append(Level_01(self))
 
         # Set the current level
@@ -247,6 +270,7 @@ class Platformer:
             self._check_events()
             self.current_level.update()
             self.player.update()
+            self._update_level_shift()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -277,6 +301,21 @@ class Platformer:
             self.player.moving_right = False
         elif event.key == pygame.K_LEFT:
             self.player.moving_left = False
+
+    def _update_level_shift(self) -> None:
+        """Shifts the level according to the player's movement and screen limits."""
+        # If the player gets near the right side of the screen, shift the level left (-x)
+        if self.player.rect.right >= self.settings.RIGHT_SCREEN_LIMIT:
+            diff = self.player.rect.right - self.settings.RIGHT_SCREEN_LIMIT
+            self.player.rect.right = self.settings.RIGHT_SCREEN_LIMIT
+            self.current_level.shift_level(-diff)
+
+        # If the player gets near the left side, shift the
+        # level to the right (+x)
+        elif self.player.rect.left <= self.settings.LEFT_SCREEN_LIMIT:
+            diff = self.settings.LEFT_SCREEN_LIMIT - self.player.rect.left
+            self.player.rect.left = self.settings.LEFT_SCREEN_LIMIT
+            self.current_level.shift_level(diff)
 
     def _update_screen(self) -> None:
         """Update all game elements and flip the screen."""
