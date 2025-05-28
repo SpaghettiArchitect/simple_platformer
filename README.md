@@ -11,6 +11,8 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
 - [x] Implement jump mechanic.
 - [x] Implement automatic level creation.
 - [x] Add collision detection between player and level blocks.
+- [x] Implement shifting of level objects (so the player
+      can scroll right and left).
 - [ ] Add enemies to game.
 - [ ] Add interaction between enemies and the player.
 - [ ] Add coins that the player can collect.
