@@ -75,11 +75,12 @@ class Level:
         # Draw all the sprites that we have
         self.platform_list.draw(self.screen)
 
-    def create(self, pattern: list[str]) -> None:
+    def create(self, pattern: list[str], level_size: int) -> None:
         """Creates the structure of the level based on a string pattern."""
         current_x = 0
         current_y = self.settings.SCREEN_HEIGHT
 
+        # Add the platforms starting from the bottom-left of the screen
         for row in pattern[::-1]:
             current_y -= self.settings.BLOCK_SIZE
 
@@ -93,6 +94,30 @@ class Level:
 
             current_x = 0
 
+        # Add the blocks that confine the player to the level
+        self._add_limits(level_size)
+
+    def _add_limits(self, level_size: int) -> None:
+        """Add blocks to the left and right side to define the level's boundaries."""
+        left_padding = self.settings.LEFT_SCREEN_LIMIT
+        right_padding = self.settings.RIGHT_SCREEN_LIMIT
+        screen_height = self.settings.SCREEN_HEIGHT
+        block_size = self.settings.BLOCK_SIZE
+
+        # Add the left padding of blocks to the level
+        for current_y in range(0, screen_height, block_size):
+            for current_x in range(-left_padding, 0, block_size):
+                new_block = Block()
+                new_block.set_position(current_x, current_y)
+                self.platform_list.add(new_block)
+
+        # Add the right padding of blocks to the level
+        for current_y in range(0, screen_height, block_size):
+            for current_x in range(level_size, level_size + right_padding, block_size):
+                new_block = Block()
+                new_block.set_position(current_x, current_y)
+                self.platform_list.add(new_block)
+
     def shift_level(self, shift_x: int) -> None:
         """Shifts the whole level right or left, depending of the player's movement."""
         # Keep track of the shift amount
@@ -102,8 +127,6 @@ class Level:
         for platform in self.platform_list:
             platform.rect.x += shift_x
 
-        print(self.level_shift)
-
 
 class Level_01(Level):
     """A class that defines the layout of level 1."""
@@ -111,8 +134,6 @@ class Level_01(Level):
     def __init__(self, game: "Platformer"):
         """Creates level 1 of the game."""
         super().__init__(game)
-
-        self.level_limit = -1200
 
         # The level layout
         self.level = [
@@ -123,7 +144,9 @@ class Level_01(Level):
             "XXXXXXXXXXXXXXXXXXXXXXX",
         ]
 
-        self.create(self.level)
+        self.level_size = self.settings.BLOCK_SIZE * len(self.level[-1])
+
+        self.create(self.level, self.level_size)
 
 
 class Player(pygame.sprite.Sprite):
