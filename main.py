@@ -241,6 +241,7 @@ class Platformer:
 
         while True:
             self._check_events()
+            self.current_level.update()
             self.player.update()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
@@ -275,7 +276,6 @@ class Platformer:
 
     def _update_screen(self) -> None:
         """Update all game elements and flip the screen."""
-        self.current_level.update()
         self.current_level.draw()
         self.player.draw_me()
         pygame.display.flip()
