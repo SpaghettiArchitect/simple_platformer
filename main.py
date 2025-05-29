@@ -107,6 +107,9 @@ class Level:
         self.platform_list = pygame.sprite.Group()
         self.enemies_list = pygame.sprite.Group()
 
+        # Keeps track of the player's position in the level
+        self.player_pos = pygame.Vector2(0, 0)
+
         # Keeps track of how much has this level been
         # shifted left or right
         self.level_shift = 0
@@ -138,6 +141,8 @@ class Level:
                     new_block = Block()
                     new_block.set_position(current_x, current_y)
                     self.platform_list.add(new_block)
+                elif object_type == "P":
+                    self.player_pos = pygame.Vector2(current_x, current_y)
                 elif object_type == "E":
                     new_enemy = Enemy()
                     new_enemy.set_position(current_x, current_y)
@@ -198,7 +203,7 @@ class Level_01(Level):
             "_____E_______E_____XX__",
             "___XXXX____XXXXX",
             "",
-            "",
+            "P",
             "XXXXXXXXXXXXXXXXXXXXXXX",
         ]
 
@@ -216,15 +221,10 @@ class Player(pygame.sprite.Sprite):
 
         self.screen = game.screen
         self.settings = game.settings
-        self.screen_rect = game.screen.get_rect()
 
         # Load the robot image and get its rect
         self.image = pygame.image.load(r"assets/robot.png").convert_alpha()
         self.rect = self.image.get_rect()
-
-        # Start the player at the bottom-left of the screen
-        self.rect.bottom = self.screen_rect.bottom - self.settings.BLOCK_SIZE
-        self.rect.left = self.settings.LEFT_SCREEN_LIMIT
 
         # Movement flags
         self.moving_right = False
@@ -257,6 +257,10 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.change_y
 
         self._check_vertical_collisions()
+
+    def set_position(self, coord: pygame.Vector2) -> None:
+        """Set the position of the player on the screen."""
+        self.rect.bottomleft = coord
 
     def _apply_gravity(self) -> None:
         """Moves the player towards the bottom of the screen."""
@@ -342,7 +346,12 @@ class Platformer:
         self.level_no = 0
         self.current_level = self.level_list[self.level_no]
 
+        # The player needs the current level to now if it's collifing with
+        # a platform
         self.player.level = self.current_level
+
+        # Set the player position at the start of the game
+        self.player.set_position(self.current_level.player_pos)
 
     def run_game(self) -> None:
         """Starts the main loop of the game."""
