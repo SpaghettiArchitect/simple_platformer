@@ -52,8 +52,7 @@ class Block(pygame.sprite.Sprite):
 
     def set_position(self, x: int, y: int) -> None:
         """Updates the position of the block."""
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.bottomleft = (x, y)
 
     def _draw_pattern(self) -> None:
         """Draws a triangular pattern inside the block."""
@@ -83,6 +82,21 @@ class Block(pygame.sprite.Sprite):
         )
 
 
+class Enemy(pygame.sprite.Sprite):
+    """A class to create and control an enemy."""
+
+    def __init__(self):
+        """Initializes the enemy image and rect."""
+        super().__init__()
+
+        self.image = pygame.image.load("assets\monster.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+    def set_position(self, x: int, y: int) -> None:
+        """Set the position of the enemy on the screen."""
+        self.rect.bottomleft = (x, y)
+
+
 class Level:
     """A generic super-class used to define a level."""
 
@@ -91,6 +105,7 @@ class Level:
         self.screen = game.screen
         self.settings = game.settings
         self.platform_list = pygame.sprite.Group()
+        self.enemies_list = pygame.sprite.Group()
 
         # Keeps track of how much has this level been
         # shifted left or right
@@ -99,6 +114,7 @@ class Level:
     def update(self) -> None:
         """Update everything in this level."""
         self.platform_list.update()
+        self.enemies_list.update()
 
     def draw(self) -> None:
         """Draw everything on this level."""
@@ -108,6 +124,7 @@ class Level:
 
         # Draw all the sprites that we have
         self.platform_list.draw(self.screen)
+        self.enemies_list.draw(self.screen)
 
     def create(self, pattern: list[str], level_size: int) -> None:
         """Creates the structure of the level based on a string pattern."""
@@ -116,15 +133,19 @@ class Level:
 
         # Add the platforms starting from the bottom-left of the screen
         for row in pattern[::-1]:
-            current_y -= self.settings.BLOCK_SIZE
-
             for object_type in row:
                 if object_type == "X":
                     new_block = Block()
                     new_block.set_position(current_x, current_y)
                     self.platform_list.add(new_block)
+                elif object_type == "E":
+                    new_enemy = Enemy()
+                    new_enemy.set_position(current_x, current_y)
+                    self.enemies_list.add(new_enemy)
 
                 current_x += self.settings.BLOCK_SIZE
+
+            current_y -= self.settings.BLOCK_SIZE
 
             current_x = 0
 
@@ -139,14 +160,14 @@ class Level:
         block_size = self.settings.BLOCK_SIZE
 
         # Add the left padding of blocks to the level
-        for current_y in range(0, screen_height, block_size):
+        for current_y in range(screen_height, 0, -block_size):
             for current_x in range(-left_padding, 0, block_size):
                 new_block = Block()
                 new_block.set_position(current_x, current_y)
                 self.platform_list.add(new_block)
 
         # Add the right padding of blocks to the level
-        for current_y in range(0, screen_height, block_size):
+        for current_y in range(screen_height, 0, -block_size):
             for current_x in range(level_size, level_size + right_padding, block_size):
                 new_block = Block()
                 new_block.set_position(current_x, current_y)
@@ -161,6 +182,9 @@ class Level:
         for platform in self.platform_list:
             platform.rect.x += shift_x
 
+        for enemy in self.enemies_list:
+            enemy.rect.x += shift_x
+
 
 class Level_01(Level):
     """A class that defines the layout of level 1."""
@@ -171,7 +195,7 @@ class Level_01(Level):
 
         # The level layout
         self.level = [
-            "___________________XX__",
+            "_____E_______E_____XX__",
             "___XXXX____XXXXX",
             "",
             "",
