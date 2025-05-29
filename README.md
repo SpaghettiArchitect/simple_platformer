@@ -13,10 +13,10 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
 - [x] Add collision detection between player and level blocks.
 - [x] Implement shifting of level objects (so the player
       can scroll right and left).
-- [ ] Add enemies to game.
+- [x] Add enemies to game.
 - [ ] Add interaction between enemies and the player.
 - [ ] Add coins that the player can collect.
 - [ ] Implement scoring system.
 - [ ] Implement game over system (when the player has no lives left).
 - [ ] Add door to end the level.
-- [ ] Implement staring screen.
+- [ ] Implement starting screen.

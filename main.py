@@ -21,6 +21,9 @@ class Settings:
         self.BLOCK_SIZE = 50
         self.BLOCK_COLOR = pygame.Color(18, 102, 79)
 
+        # Enemies' settings
+        self.enemy_speed = 3
+
         # Limits how far the player can go to the left
         # or right side of the screen until it starts to shift
         self.LEFT_SCREEN_LIMIT = 100
@@ -89,8 +92,22 @@ class Enemy(pygame.sprite.Sprite):
         """Initializes the enemy image and rect."""
         super().__init__()
 
-        self.image = pygame.image.load("assets\monster.png").convert_alpha()
+        self.settings = Settings()
+        self.image = pygame.image.load(r"assets\monster.png").convert_alpha()
         self.rect = self.image.get_rect()
+
+        # Set the current direction of the enemy
+        self.change_x = self.settings.enemy_speed
+
+    def update(self, platform_limits: pygame.sprite.Group):
+        """Updates the position of the enemy."""
+        # Moves the enemy right or left on the platform
+        self.rect.x += self.change_x
+
+        # Check for collisions with any platform limit
+        limit_hits = pygame.sprite.spritecollideany(self, platform_limits)
+        if limit_hits is not None:
+            self.change_x *= -1  # Change direction of movement
 
     def set_position(self, x: int, y: int) -> None:
         """Set the position of the enemy on the screen."""
@@ -107,6 +124,7 @@ class Level:
 
         self.platforms = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
+        self.platform_limits = pygame.sprite.Group()
 
         # Keeps track of the player's position in the level
         self.player_pos = pygame.Vector2(0, 0)
@@ -118,7 +136,8 @@ class Level:
     def update(self) -> None:
         """Update everything in this level."""
         self.platforms.update()
-        self.enemies.update()
+        self.platform_limits.update()
+        self.enemies.update(self.platform_limits)
 
     def draw(self) -> None:
         """Draw everything on this level."""
@@ -128,6 +147,7 @@ class Level:
 
         # Draw all the sprites that we have
         self.platforms.draw(self.screen)
+        self.platform_limits.draw(self.screen)
         self.enemies.draw(self.screen)
 
     def create(self, pattern: list[str], level_size: int) -> None:
@@ -148,6 +168,10 @@ class Level:
                     new_enemy = Enemy()
                     new_enemy.set_position(current_x, current_y)
                     self.enemies.add(new_enemy)
+                elif object_type == "#":
+                    new_platform_limit = Block(self.settings.BG_COLOR, False)
+                    new_platform_limit.set_position(current_x, current_y)
+                    self.platform_limits.add(new_platform_limit)
 
                 current_x += self.settings.BLOCK_SIZE
 
@@ -191,6 +215,9 @@ class Level:
         for enemy in self.enemies:
             enemy.rect.x += shift_x
 
+        for limit in self.platform_limits:
+            limit.rect.x += shift_x
+
 
 class Level_01(Level):
     """A class that defines the layout of level 1."""
@@ -201,7 +228,7 @@ class Level_01(Level):
 
         # The level layout
         self.level = [
-            "_____E_______E_____XX__",
+            "__#__E_#__#__E__#__XX__",
             "___XXXX____XXXXX",
             "",
             "P",
