@@ -104,8 +104,9 @@ class Level:
         """Initializes all sprite groups of the level."""
         self.screen = game.screen
         self.settings = game.settings
-        self.platform_list = pygame.sprite.Group()
-        self.enemies_list = pygame.sprite.Group()
+
+        self.platforms = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
 
         # Keeps track of the player's position in the level
         self.player_pos = pygame.Vector2(0, 0)
@@ -116,8 +117,8 @@ class Level:
 
     def update(self) -> None:
         """Update everything in this level."""
-        self.platform_list.update()
-        self.enemies_list.update()
+        self.platforms.update()
+        self.enemies.update()
 
     def draw(self) -> None:
         """Draw everything on this level."""
@@ -126,8 +127,8 @@ class Level:
         self.screen.fill(self.settings.BG_COLOR)
 
         # Draw all the sprites that we have
-        self.platform_list.draw(self.screen)
-        self.enemies_list.draw(self.screen)
+        self.platforms.draw(self.screen)
+        self.enemies.draw(self.screen)
 
     def create(self, pattern: list[str], level_size: int) -> None:
         """Creates the structure of the level based on a string pattern."""
@@ -140,13 +141,13 @@ class Level:
                 if object_type == "X":
                     new_block = Block()
                     new_block.set_position(current_x, current_y)
-                    self.platform_list.add(new_block)
+                    self.platforms.add(new_block)
                 elif object_type == "P":
                     self.player_pos = pygame.Vector2(current_x, current_y)
                 elif object_type == "E":
                     new_enemy = Enemy()
                     new_enemy.set_position(current_x, current_y)
-                    self.enemies_list.add(new_enemy)
+                    self.enemies.add(new_enemy)
 
                 current_x += self.settings.BLOCK_SIZE
 
@@ -169,14 +170,14 @@ class Level:
             for current_x in range(-left_padding, 0, block_size):
                 new_block = Block()
                 new_block.set_position(current_x, current_y)
-                self.platform_list.add(new_block)
+                self.platforms.add(new_block)
 
         # Add the right padding of blocks to the level
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(level_size, level_size + right_padding, block_size):
                 new_block = Block()
                 new_block.set_position(current_x, current_y)
-                self.platform_list.add(new_block)
+                self.platforms.add(new_block)
 
     def shift_level(self, shift_x: int) -> None:
         """Shifts the whole level right or left, depending of the player's movement."""
@@ -184,10 +185,10 @@ class Level:
         self.level_shift += shift_x
 
         # Shift all the level sprites
-        for platform in self.platform_list:
+        for platform in self.platforms:
             platform.rect.x += shift_x
 
-        for enemy in self.enemies_list:
+        for enemy in self.enemies:
             enemy.rect.x += shift_x
 
 
@@ -290,9 +291,7 @@ class Player(pygame.sprite.Sprite):
     def _check_horizontal_collisions(self) -> None:
         """Check if the player hit anything in the x-axis. If so, update the position
         so it doesn't go through the object."""
-        platform_hits = pygame.sprite.spritecollide(
-            self, self.level.platform_list, False
-        )
+        platform_hits = pygame.sprite.spritecollide(self, self.level.platforms, False)
         for platform in platform_hits:
             # Player was moving right
             if self.change_x > 0:
@@ -304,9 +303,7 @@ class Player(pygame.sprite.Sprite):
     def _check_vertical_collisions(self) -> None:
         """Check if the player hit anything in the y-axis. If so, update the position
         so it doesn't go through the object."""
-        platform_hits = pygame.sprite.spritecollide(
-            self, self.level.platform_list, False
-        )
+        platform_hits = pygame.sprite.spritecollide(self, self.level.platforms, False)
         for platform in platform_hits:
             # Player was moving down
             if self.change_y > 0:
