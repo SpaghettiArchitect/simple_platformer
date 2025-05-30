@@ -260,12 +260,12 @@ class Player(pygame.sprite.Sprite):
         self.moving_left = False
         self.on_ground = False
 
-        # Speed of the player in the x and y axis; at the
-        # start of the game the player doesn't move
+        # Speed of the player in the x and y axis; at the start of the game the
+        # player doesn't move
         self.change_x = 0
         self.change_y = 0
 
-        # List the of the level blocks
+        # Needed to access the level's platforms
         self.level = None
 
     def update(self):
