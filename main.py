@@ -299,7 +299,7 @@ class Player(pygame.sprite.Sprite):
         """Make the player jump by changing its vertical speed."""
         # If it is ok to jump, set our speed upwards
         if self.on_ground:
-            self.change_y = -15
+            self.change_y = -14
             self.on_ground = False  # Player is now in the air
 
     def draw_me(self) -> None:
