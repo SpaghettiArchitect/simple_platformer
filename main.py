@@ -107,6 +107,7 @@ class Enemy(pygame.sprite.Sprite):
         # Check for collisions with any platform limit
         limit_hits = pygame.sprite.spritecollideany(self, platform_limits)
         if limit_hits is not None:
+            self.image = pygame.transform.flip(self.image, True, False)
             self.change_x *= -1  # Change direction of movement
 
     def set_position(self, x: int, y: int) -> None:
@@ -370,7 +371,7 @@ class Platformer:
         self.level_no = 0
         self.current_level = self.level_list[self.level_no]
 
-        # The player needs the current level to now if it's collifing with
+        # The player needs the current level to now if it's colliding with
         # a platform
         self.player.level = self.current_level
 
@@ -418,7 +419,8 @@ class Platformer:
 
     def _update_level_shift(self) -> None:
         """Shifts the level according to the player's movement and screen limits."""
-        # If the player gets near the right side of the screen, shift the level left (-x)
+        # If the player gets near the right side of the screen, shift the
+        # level left (-x)
         if self.player.rect.right >= self.settings.RIGHT_SCREEN_LIMIT:
             diff = self.player.rect.right - self.settings.RIGHT_SCREEN_LIMIT
             self.player.rect.right = self.settings.RIGHT_SCREEN_LIMIT
