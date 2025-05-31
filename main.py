@@ -96,6 +96,9 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.image.load(r"assets\monster.png").convert_alpha()
         self.rect = self.image.get_rect()
 
+        # Used for collision detection with the player
+        self.mask = pygame.mask.from_surface(self.image)
+
         # Set the current direction of the enemy
         self.change_x = self.settings.enemy_speed
 
@@ -127,7 +130,7 @@ class Level:
         self.enemies = pygame.sprite.Group()
         self.platform_limits = pygame.sprite.Group()
 
-        # Keeps track of the player's position in the level
+        # Keeps track of the starting position of the player
         self.player_pos = pygame.Vector2(0, 0)
 
         # Keeps track of how much has this level been
@@ -208,6 +211,7 @@ class Level:
         """Shifts the whole level right or left, depending of the player's movement."""
         # Keep track of the shift amount
         self.level_shift += shift_x
+        self.player_pos.x += shift_x
 
         # Shift all the level sprites
         for platform in self.platforms:
@@ -254,6 +258,9 @@ class Player(pygame.sprite.Sprite):
         # Load the robot image and get its rect
         self.image = pygame.image.load(r"assets/robot.png").convert_alpha()
         self.rect = self.image.get_rect()
+
+        # Used for collision detection with enemies
+        self.mask = pygame.mask.from_surface(self.image)
 
         # Movement flags
         self.moving_right = False
@@ -362,6 +369,7 @@ class Platformer:
 
         # Creates the robot the player can control
         self.player = Player(self)
+        self.player_group = pygame.sprite.GroupSingle(self.player)
 
         # Create all the levels
         self.level_list: list[Level] = []
@@ -386,6 +394,7 @@ class Platformer:
             self.current_level.update()
             self.player.update()
             self._update_level_shift()
+            self._check_player_enemy_collisions()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -416,6 +425,28 @@ class Platformer:
             self.player.moving_right = False
         elif event.key == pygame.K_LEFT:
             self.player.moving_left = False
+
+    def _check_player_enemy_collisions(self) -> None:
+        """Checks if the player has collided with any enemy using masks.
+
+        If the player is falling down and collides with the top of the enemy
+        mask, the enemy is deleted and the player bounces a little.
+
+        If the player touches any other part of the enemy, the player loses a
+        life and its position is restarted to the start of the level.
+        """
+        enemy_hit = pygame.sprite.spritecollideany(
+            self.player, self.current_level.enemies
+        )
+
+        if enemy_hit is not None:
+            point_of_collision = pygame.sprite.collide_mask(enemy_hit, self.player)
+            if point_of_collision is not None:
+                if point_of_collision[1] <= 15 and self.player.change_y > 0:
+                    self.player.change_y = -6
+                    enemy_hit.kill()
+                else:
+                    self.player.set_position(self.current_level.player_pos)
 
     def _update_level_shift(self) -> None:
         """Shifts the level according to the player's movement and screen limits."""

@@ -14,7 +14,7 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
 - [x] Implement shifting of level objects (so the player
       can scroll right and left).
 - [x] Add enemies to game.
-- [ ] Add interaction between enemies and the player.
+- [x] Add interaction between enemies and the player.
 - [ ] Add coins that the player can collect.
 - [ ] Implement scoring system.
 - [ ] Implement game over system (when the player has no lives left).
