@@ -300,13 +300,13 @@ class Player(pygame.sprite.Sprite):
 
     def _apply_gravity(self) -> None:
         """Moves the player towards the bottom of the screen."""
-        self.change_y += 0.6
+        self.change_y += 0.7
 
     def jump(self) -> None:
         """Make the player jump by changing its vertical speed."""
         # If it is ok to jump, set our speed upwards
         if self.on_ground:
-            self.change_y = -14
+            self.change_y = -15
             self.on_ground = False  # Player is now in the air
 
     def draw_me(self) -> None:
