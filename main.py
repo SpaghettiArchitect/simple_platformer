@@ -82,7 +82,7 @@ class Scoreboard:
 
         # Display the score at the top-right side of the screen
         self.score_text_rect = self.score_text.get_rect()
-        self.score_text_rect.topright = (self.screen_rect.right - 20, 20)
+        self.score_text_rect.topright = (self.screen_rect.right - 10, 10)
         self.score_number_rect = self.score_number.get_rect()
         self.score_number_rect.topright = self.score_text_rect.bottomright
 
@@ -203,24 +203,26 @@ class Heart(pygame.sprite.Sprite):
 
         self._shape = [
             "__#####__#####__",
-            "_##RRR####RRR##_",
-            "##RRRRR##RRRRR##",
-            "#RRRRRRRRRRRRRR#",
-            "#RRRRRRRRRRRRRR#",
-            "#RRRRRRRRRRRRRR#",
-            "#RRRRRRRRRRRRRR#",
-            "##RRRRRRRRRRRR##",
-            "_#RRRRRRRRRRRR#_",
-            "_##RRRRRRRRRR##_",
-            "__##RRRRRRRR##__",
-            "___##RRRRRR##___",
-            "____##RRRR##____",
-            "_____##RR##_____",
+            "_##RRR####RRD##_",
+            "##RRRRR##RRRRD##",
+            "#RWWRRRRRRRRRDD#",
+            "#RWRRRRRRRRRRDD#",
+            "#RRRRRRRRRRRRDD#",
+            "#RWRRRRRRRRRRDD#",
+            "##RRRRRRRRRRDD##",
+            "_#RRRRRRRRRRDD#_",
+            "_##RRRRRRRRDD##_",
+            "__##RRRRRRDD##__",
+            "___##RRRRDD##___",
+            "____##RRDD##____",
+            "_____##DD##_____",
             "______####______",
             "_______##_______",
         ]
-        self.COLOR_RED = pygame.Color(255, 0, 0)
-        self.COLOR_BLACK = pygame.Color(0, 0, 0)
+        self._C_RED = pygame.Color(255, 0, 0, 200)
+        self._C_DARK_RED = pygame.Color(175, 0, 0, 200)
+        self._C_BLACK = pygame.Color(0, 0, 0, 200)
+        self._C_WHITE = pygame.Color(255, 255, 255, 200)
         self._pixel_size = 2
         self._size = self._pixel_size * len(self._shape)
 
@@ -236,6 +238,8 @@ class Heart(pygame.sprite.Sprite):
         Uses the patter found in self._shape to draw the figure:
             '#': Black rectangle
             'R': Red rectangle
+            'D': Darker red rectangle
+            'W': White rectangle
         Any other character is ignored, but contributes to padding.
         """
         current_x = self.rect.left
@@ -249,9 +253,13 @@ class Heart(pygame.sprite.Sprite):
                     current_x, current_y, self._pixel_size, self._pixel_size
                 )
                 if char == "#":
-                    pygame.draw.rect(self.image, self.COLOR_BLACK, current_rect)
+                    pygame.draw.rect(self.image, self._C_BLACK, current_rect)
                 elif char == "R":
-                    pygame.draw.rect(self.image, self.COLOR_RED, current_rect)
+                    pygame.draw.rect(self.image, self._C_RED, current_rect)
+                elif char == "D":
+                    pygame.draw.rect(self.image, self._C_DARK_RED, current_rect)
+                elif char == "W":
+                    pygame.draw.rect(self.image, self._C_WHITE, current_rect)
                 current_x += self._pixel_size
 
             current_x = self.rect.left
