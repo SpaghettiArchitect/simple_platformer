@@ -118,6 +118,75 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.bottomleft = (x, y)
 
 
+class Heart(pygame.sprite.Sprite):
+    """Class to create the shape of a heart to represent the player's lives."""
+
+    def __init__(self) -> None:
+        """Initializes the heart shape, and puts it inside an image."""
+        super().__init__()
+
+        self._shape = [
+            "__#####__#####__",
+            "_##RRR####RRR##_",
+            "##RRRRR##RRRRR##",
+            "#RRRRRRRRRRRRRR#",
+            "#RRRRRRRRRRRRRR#",
+            "#RRRRRRRRRRRRRR#",
+            "#RRRRRRRRRRRRRR#",
+            "##RRRRRRRRRRRR##",
+            "_#RRRRRRRRRRRR#_",
+            "_##RRRRRRRRRR##_",
+            "__##RRRRRRRR##__",
+            "___##RRRRRR##___",
+            "____##RRRR##____",
+            "_____##RR##_____",
+            "______####______",
+            "_______##_______",
+        ]
+        self.COLOR_RED = pygame.Color(255, 0, 0)
+        self.COLOR_BLACK = pygame.Color(0, 0, 0)
+        self._pixel_size = 2
+        self._size = self._pixel_size * len(self._shape)
+
+        self.image = pygame.Surface((self._size, self._size), flags=pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+
+        self._draw_shape()
+
+    def _draw_shape(self) -> None:
+        """Helper funtion to create the heart shape inside the image surface
+        by drawing rectangles.
+
+        Uses the patter found in self._shape to draw the figure:
+            '#': Black rectangle
+            'R': Red rectangle
+        Any other character is ignored, but contributes to padding.
+        """
+        current_x = self.rect.left
+        current_y = self.rect.top
+
+        # Each row in the pattern
+        for row in self._shape:
+            # Each character in the pattern
+            for char in row:
+                current_rect = pygame.Rect(
+                    current_x, current_y, self._pixel_size, self._pixel_size
+                )
+                if char == "#":
+                    pygame.draw.rect(self.image, self.COLOR_BLACK, current_rect)
+                elif char == "R":
+                    pygame.draw.rect(self.image, self.COLOR_RED, current_rect)
+                current_x += self._pixel_size
+
+            current_x = self.rect.left
+            current_y += self._pixel_size
+
+    def set_position(self, x: int, y: int) -> None:
+        """Update the position of the heart relative to the screen."""
+        self.rect.x = x
+        self.rect.y = y
+
+
 class Level:
     """A generic super-class used to define a level."""
 
@@ -386,6 +455,11 @@ class Platformer:
         # Set the player position at the start of the game
         self.player.set_position(self.current_level.player_pos)
 
+        # Create a heart for the player's lives
+        self.heart = pygame.sprite.GroupSingle()
+        self.heart.add(Heart())
+        self.heart.sprite.set_position(10, 10)
+
     def run_game(self) -> None:
         """Starts the main loop of the game."""
 
@@ -395,6 +469,7 @@ class Platformer:
             self.player.update()
             self._update_level_shift()
             self._check_player_enemy_collisions()
+            self.heart.update()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -446,6 +521,7 @@ class Platformer:
                     self.player.change_y = -6
                     enemy_hit.kill()
                 else:
+                    pygame.time.wait(500)
                     self.player.set_position(self.current_level.player_pos)
 
     def _update_level_shift(self) -> None:
@@ -468,6 +544,7 @@ class Platformer:
         """Update all game elements and flip the screen."""
         self.current_level.draw()
         self.player.draw_me()
+        self.heart.draw(self.screen)
         pygame.display.flip()
 
 
