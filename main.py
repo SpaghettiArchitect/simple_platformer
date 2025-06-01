@@ -16,6 +16,7 @@ class Settings:
 
         # Player's settings
         self.player_speed = 5
+        self.PLAYER_LIVES = 5
 
         # Block's settings
         self.BLOCK_SIZE = 50
@@ -23,11 +24,86 @@ class Settings:
 
         # Enemies' settings
         self.enemy_speed = 3
+        self.ENEMY_POINTS = 100
+
+        # Font settings
+        self.FONT_COLOR = pygame.Color(0, 0, 0)
 
         # Limits how far the player can go to the left
         # or right side of the screen until it starts to shift
         self.LEFT_SCREEN_LIMIT = 100
         self.RIGHT_SCREEN_LIMIT = self.SCREEN_WIDTH - 200
+
+
+class GameStats:
+    """Class to keep track of the Platformer's statistics."""
+
+    def __init__(self, settings: Settings):
+        """Initialize the game's statistics."""
+        self.settings = settings
+        self.reset_statistics()
+
+    def reset_statistics(self) -> None:
+        """Initialize statistics that change during game execution."""
+        self.lives_left = self.settings.PLAYER_LIVES
+        self.score = 0
+        self.level = 0
+
+
+class Scoreboard:
+    """Class to show scoring information to the player."""
+
+    def __init__(
+        self, screen: pygame.Surface, settings: Settings, stats: GameStats
+    ) -> None:
+        """Initialize all scorekeeping attributes."""
+        self.screen = screen
+        self.screen_rect = self.screen.get_rect()
+        self.settings = settings
+        self.stats = stats
+
+        # Font settings to display information
+        self.text_color = self.settings.FONT_COLOR
+        self.text_font = pygame.font.SysFont(None, 24)
+        self.score_font = pygame.font.SysFont(None, 48)
+
+        # Prepare initial score images
+        self.prep_score()
+        self.prep_hearts()
+
+    def prep_score(self) -> None:
+        """Turn the score into an image that can be displayed."""
+        text_str = "SCORE"
+        score_str = f"{self.stats.score:,}"
+
+        # Score images that will be rendered
+        self.score_text = self.text_font.render(text_str, True, self.text_color)
+        self.score_number = self.score_font.render(score_str, True, self.text_color)
+
+        # Display the score at the top-right side of the screen
+        self.score_text_rect = self.score_text.get_rect()
+        self.score_text_rect.topright = (self.screen_rect.right - 20, 20)
+        self.score_number_rect = self.score_number.get_rect()
+        self.score_number_rect.topright = self.score_text_rect.bottomright
+
+    def prep_hearts(self) -> None:
+        """Show how many lives are left."""
+        self.hearts = pygame.sprite.Group()
+
+        left_padding = 0
+        for live_number in range(self.stats.lives_left):
+            heart = Heart()
+            x_pos = left_padding + 20 + live_number * heart.rect.width
+            y_pos = 20
+            heart.set_position(x_pos, y_pos)
+            self.hearts.add(heart)
+            left_padding += 3  # Adds a small padding between each heart
+
+    def draw_score(self) -> None:
+        """Draw score and lives left to the screen."""
+        self.screen.blit(self.score_text, self.score_text_rect)
+        self.screen.blit(self.score_number, self.score_number_rect)
+        self.hearts.draw(self.screen)
 
 
 class Block(pygame.sprite.Sprite):
@@ -436,6 +512,10 @@ class Platformer:
         )
         pygame.display.set_caption("Robot Platfomer")
 
+        # Create an instance to store game statistics and scoreboard
+        self.stats = GameStats(self.settings)
+        self.scoreboard = Scoreboard(self.screen, self.settings, self.stats)
+
         # Creates the robot the player can control
         self.player = Player(self)
         self.player_group = pygame.sprite.GroupSingle(self.player)
@@ -445,8 +525,7 @@ class Platformer:
         self.level_list.append(Level_01(self))
 
         # Set the current level
-        self.level_no = 0
-        self.current_level = self.level_list[self.level_no]
+        self.current_level = self.level_list[self.stats.level]
 
         # The player needs the current level to now if it's colliding with
         # a platform
@@ -454,11 +533,6 @@ class Platformer:
 
         # Set the player position at the start of the game
         self.player.set_position(self.current_level.player_pos)
-
-        # Create a heart for the player's lives
-        self.heart = pygame.sprite.GroupSingle()
-        self.heart.add(Heart())
-        self.heart.sprite.set_position(10, 10)
 
     def run_game(self) -> None:
         """Starts the main loop of the game."""
@@ -469,7 +543,6 @@ class Platformer:
             self.player.update()
             self._update_level_shift()
             self._check_player_enemy_collisions()
-            self.heart.update()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -517,12 +590,20 @@ class Platformer:
         if enemy_hit is not None:
             point_of_collision = pygame.sprite.collide_mask(enemy_hit, self.player)
             if point_of_collision is not None:
+                # If the player collides with the head of an enemy and it's
+                # falling down after jumping
                 if point_of_collision[1] <= 15 and self.player.change_y > 0:
-                    self.player.change_y = -6
+                    self.player.change_y = -6  # Make a little jump
+                    self.stats.score += self.settings.ENEMY_POINTS
+                    self.scoreboard.prep_score()
                     enemy_hit.kill()
+                # The player collided with any other part of the enemy
                 else:
                     pygame.time.wait(500)
-                    self.player.set_position(self.current_level.player_pos)
+                    if self.stats.lives_left > 0:
+                        self.stats.lives_left -= 1
+                        self.scoreboard.prep_hearts()
+                        self.player.set_position(self.current_level.player_pos)
 
     def _update_level_shift(self) -> None:
         """Shifts the level according to the player's movement and screen limits."""
@@ -544,7 +625,7 @@ class Platformer:
         """Update all game elements and flip the screen."""
         self.current_level.draw()
         self.player.draw_me()
-        self.heart.draw(self.screen)
+        self.scoreboard.draw_score()
         pygame.display.flip()
 
 

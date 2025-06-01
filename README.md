@@ -16,7 +16,7 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
 - [x] Add enemies to game.
 - [x] Add interaction between enemies and the player.
 - [ ] Add coins that the player can collect.
-- [ ] Implement scoring system.
+- [x] Implement scoring system.
 - [ ] Implement game over system (when the player has no lives left).
 - [ ] Add door to end the level.
 - [ ] Implement starting screen.
