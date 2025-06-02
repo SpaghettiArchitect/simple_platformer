@@ -26,7 +26,10 @@ class Settings:
 
         # Enemies' settings
         self.enemy_speed = 3
-        self.ENEMY_POINTS = 100
+        self.ENEMY_POINTS = 200
+
+        # Coin's settings
+        self.COIN_POINTS = 100
 
         # Font settings
         self.FONT_COLOR = Color(255, 255, 255)
@@ -321,6 +324,9 @@ class Coin(Sprite):
         # Changes the color of the coin to a darker yellow
         new_yellow = Color(252, 174, 4, 255)
         self.image.fill(new_yellow, special_flags=pygame.BLEND_RGBA_MIN)
+
+        # The mask is used to calculate collisions
+        self.mask = pygame.mask.from_surface(self.image)
 
     def set_center(self, coordinate: Vector2) -> None:
         """Position the center of the coin at the given coordinate."""
@@ -644,6 +650,7 @@ class Platformer:
             self.player.update()
             self._update_level_shift()
             self._check_player_enemy_collisions()
+            self._check_player_coin_collisions()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -705,6 +712,21 @@ class Platformer:
                         self.stats.lives_left -= 1
                         self.scoreboard.prep_hearts()
                         self.player.set_bottomleft(self.current_level.player_start_pos)
+
+    def _check_player_coin_collisions(self) -> None:
+        """Check if the player has collided with any coin. If so, augment
+        the game's score.
+        """
+        coins_hit_list = pygame.sprite.spritecollide(
+            self.player,
+            self.current_level.coins,
+            True,
+            collided=pygame.sprite.collide_mask,
+        )
+
+        for _ in coins_hit_list:
+            self.stats.score += self.settings.COIN_POINTS
+            self.scoreboard.prep_score()
 
     def _update_level_shift(self) -> None:
         """Shifts the level according to the player's movement and screen limits."""
