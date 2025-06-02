@@ -14,7 +14,7 @@ class Settings:
         self.SCREEN_WIDTH = 800
         self.SCREEN_HEIGHT = 500
         self.FPS = 60
-        self.BG_COLOR = Color(42, 135, 191)
+        self.BG_COLOR = Color(18, 148, 199)
 
         # Player's settings
         self.player_speed = 5
@@ -22,7 +22,7 @@ class Settings:
 
         # Block's settings
         self.BLOCK_SIZE = 50
-        self.BLOCK_COLOR = Color(18, 102, 79)
+        self.BLOCK_COLOR = Color(88, 115, 22)
 
         # Enemies' settings
         self.enemy_speed = 3
@@ -159,30 +159,38 @@ class Block(Sprite):
         self.rect.bottomleft = coordinate
 
     def _draw_pattern(self) -> None:
-        """Draws a triangular pattern inside the block."""
+        """Draws a triangular pattern inside the block, so it will look
+        less two dimensional.
+        """
         # Top triangle
         pygame.draw.polygon(
             self.image,
-            (self.color.r + 10, self.color.g + 10, self.color.b + 10),
+            self.color.correct_gamma(0.7),
             (self.rect.topleft, self.rect.topright, self.rect.center),
         )
         # Right triangle
         pygame.draw.polygon(
             self.image,
-            self.color,
+            self.color.correct_gamma(0.9),
             (self.rect.topright, self.rect.bottomright, self.rect.center),
         )
         # Bottom triangle
         pygame.draw.polygon(
             self.image,
-            (self.color.r - 10, self.color.g - 10, self.color.b - 10),
+            self.color,
             (self.rect.bottomleft, self.rect.bottomright, self.rect.center),
         )
         # Left triangle
         pygame.draw.polygon(
             self.image,
-            (self.color.r - 5, self.color.g - 5, self.color.b - 5),
+            self.color.correct_gamma(0.8),
             (self.rect.bottomleft, self.rect.topleft, self.rect.center),
+        )
+        pygame.draw.line(
+            self.image, self.color, self.rect.topleft, self.rect.bottomright
+        )
+        pygame.draw.line(
+            self.image, self.color, self.rect.bottomleft, self.rect.topright
         )
 
 
@@ -244,7 +252,7 @@ class Heart(Sprite):
             "______####______",
             "_______##_______",
         ]
-        self._C_ALPHA = 175
+        self._C_ALPHA = 200
         self._C_RED = Color(255, 0, 0, self._C_ALPHA)
         self._C_DARK_RED = Color(175, 0, 0, self._C_ALPHA)
         self._C_BLACK = Color(0, 0, 0, self._C_ALPHA)
@@ -306,6 +314,10 @@ class Coin(Sprite):
 
         self.image = pygame.image.load(r"assets\coin.png").convert_alpha()
         self.rect = self.image.get_rect()
+
+        # Changes the color of the coin to a darker yellow
+        new_yellow = Color(252, 174, 4, 255)
+        self.image.fill(new_yellow, special_flags=pygame.BLEND_RGBA_MIN)
 
     def set_center(self, coordinate: Vector2) -> None:
         """Position the center of the coin at the given coordinate."""
