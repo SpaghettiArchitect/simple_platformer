@@ -313,6 +313,9 @@ class Coin(Sprite):
         super().__init__()
 
         self.image = pygame.image.load(r"assets\coin.png").convert_alpha()
+
+        # Make the image a little bit smaller and get the rect
+        self.image = pygame.transform.smoothscale(self.image, (30, 30))
         self.rect = self.image.get_rect()
 
         # Changes the color of the coin to a darker yellow
