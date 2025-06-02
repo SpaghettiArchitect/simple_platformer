@@ -307,9 +307,9 @@ class Coin(Sprite):
         self.image = pygame.image.load(r"assets\coin.png").convert_alpha()
         self.rect = self.image.get_rect()
 
-    def set_center(self, x: int, y: int) -> None:
+    def set_center(self, coordinate: Vector2) -> None:
         """Position the center of the coin at the given coordinate."""
-        self.rect.center = (x, y)
+        self.rect.center = coordinate
 
 
 class Level:
@@ -322,6 +322,7 @@ class Level:
 
         # Groups to keep track of the level's sprites
         self.platforms = Group()
+        self.coins = Group()
         self.enemies = Group()
         self.platform_limits = Group()
 
@@ -336,6 +337,7 @@ class Level:
         """Update everything in this level."""
         self.platforms.update()
         self.platform_limits.update()
+        self.coins.update()
         self.enemies.update(self.platform_limits)
 
     def draw(self) -> None:
@@ -347,6 +349,7 @@ class Level:
         # Draw all the sprites that we have
         self.platforms.draw(self.screen)
         self.platform_limits.draw(self.screen)
+        self.coins.draw(self.screen)
         self.enemies.draw(self.screen)
 
     def _create(self, pattern: list[str], level_size: int) -> None:
@@ -358,13 +361,16 @@ class Level:
             for object_type in row:
                 if object_type == "X":
                     self._create_platform(current_pos)
+                elif object_type == "E":
+                    self._create_enemy(current_pos)
+                    self._create_coin(current_pos)
+                elif object_type == "C":
+                    self._create_coin(current_pos)
+                elif object_type == "#":
+                    self._create_enemy_limit(current_pos)
                 elif object_type == "P":
                     self.player_start_pos.x = current_pos.x
                     self.player_start_pos.y = current_pos.y
-                elif object_type == "E":
-                    self._create_enemy(current_pos)
-                elif object_type == "#":
-                    self._create_enemy_limit(current_pos)
 
                 current_pos.x += self.settings.BLOCK_SIZE
 
@@ -379,6 +385,17 @@ class Level:
         new_block = Block(self.settings)
         new_block.set_bottomleft(coordinate)
         self.platforms.add(new_block)
+
+    def _create_coin(self, coordinate: Vector2) -> None:
+        """Create a new coin sprite and add it to the level's coins."""
+        # Get the center of what would've been a block
+        offset = self.settings.BLOCK_SIZE // 2
+        coord_center = Vector2(coordinate.x + offset, coordinate.y - offset)
+
+        # Create the new coin, set its position and add it to coins
+        new_coin = Coin()
+        new_coin.set_center(coord_center)
+        self.coins.add(new_coin)
 
     def _create_enemy(self, coordinate: Vector2) -> None:
         """Create a new enemy and add it to the level's enemies."""
@@ -425,6 +442,9 @@ class Level:
         for platform in self.platforms:
             platform.rect.x += shift_x
 
+        for coin in self.coins:
+            coin.rect.x += shift_x
+
         for enemy in self.enemies:
             enemy.rect.x += shift_x
 
@@ -441,7 +461,7 @@ class Level_01(Level):
 
         # The level layout
         self.level = [
-            "__#__E_#__#__E__#__XX__",
+            "__#CCEC#__#CCECC#__XX__",
             "___XXXX____XXXXX",
             "",
             "P",
