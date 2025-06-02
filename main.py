@@ -1,7 +1,7 @@
 import sys
 
 import pygame
-from pygame import Color, Surface
+from pygame import Color, Surface, Vector2
 from pygame.sprite import Group, Sprite
 
 
@@ -154,7 +154,7 @@ class Block(Sprite):
         else:
             self.image.fill(self.color)
 
-    def set_bottomleft(self, coordinate: pygame.Vector2) -> None:
+    def set_bottomleft(self, coordinate: Vector2) -> None:
         """Updates the bottomleft position of the block."""
         self.rect.bottomleft = coordinate
 
@@ -214,7 +214,7 @@ class Enemy(Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
             self.change_x *= -1  # Change direction of movement
 
-    def set_bottomleft(self, coordinate: pygame.Vector2) -> None:
+    def set_bottomleft(self, coordinate: Vector2) -> None:
         """Set the bottomleft position of the enemy on the screen."""
         self.rect.bottomleft = coordinate
 
@@ -326,7 +326,7 @@ class Level:
         self.platform_limits = Group()
 
         # Keeps track of the starting position of the player
-        self.player_start_pos = pygame.Vector2(0, 0)
+        self.player_start_pos = Vector2(0, 0)
 
         # Keeps track of how much has this level been
         # shifted left or right
@@ -351,7 +351,7 @@ class Level:
 
     def _create(self, pattern: list[str], level_size: int) -> None:
         """Creates the structure of the level based on a string pattern."""
-        current_pos = pygame.Vector2(0, self.settings.SCREEN_HEIGHT)
+        current_pos = Vector2(0, self.settings.SCREEN_HEIGHT)
 
         # Add the platforms starting from the bottom-left of the screen
         for row in pattern[::-1]:
@@ -374,19 +374,19 @@ class Level:
         # Add the blocks that confine the player to the level
         self._add_level_limits(level_size)
 
-    def _create_platform(self, coordinate: pygame.Vector2) -> None:
+    def _create_platform(self, coordinate: Vector2) -> None:
         """Create a new block and add it to the level's platforms."""
         new_block = Block(self.settings)
         new_block.set_bottomleft(coordinate)
         self.platforms.add(new_block)
 
-    def _create_enemy(self, coordinate: pygame.Vector2) -> None:
+    def _create_enemy(self, coordinate: Vector2) -> None:
         """Create a new enemy and add it to the level's enemies."""
         new_enemy = Enemy(self.settings)
         new_enemy.set_bottomleft(coordinate)
         self.enemies.add(new_enemy)
 
-    def _create_enemy_limit(self, coordinate: pygame.Vector2) -> None:
+    def _create_enemy_limit(self, coordinate: Vector2) -> None:
         """Create a new transparent block and add it to the level's
         platform_limits.
         """
@@ -405,14 +405,14 @@ class Level:
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(-left_padding, 0, block_size):
                 new_block = Block(self.settings)
-                new_block.set_bottomleft(pygame.Vector2(current_x, current_y))
+                new_block.set_bottomleft(Vector2(current_x, current_y))
                 self.platforms.add(new_block)
 
         # Add the right padding of blocks to the level
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(level_size, level_size + right_padding, block_size):
                 new_block = Block(self.settings)
-                new_block.set_bottomleft(pygame.Vector2(current_x, current_y))
+                new_block.set_bottomleft(Vector2(current_x, current_y))
                 self.platforms.add(new_block)
 
     def shift_level(self, shift_x: int) -> None:
@@ -506,7 +506,7 @@ class Player(Sprite):
 
         self._check_vertical_collisions()
 
-    def set_bottomleft(self, coord: pygame.Vector2) -> None:
+    def set_bottomleft(self, coord: Vector2) -> None:
         """Set the bottomleft position of the player on the screen."""
         self.rect.bottomleft = coord
 
