@@ -1,18 +1,20 @@
 import sys
 
 import pygame
+from pygame import Color, Surface
+from pygame.sprite import Group, Sprite
 
 
 class Settings:
     """A class to manage the game settings."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize the game settings."""
         # Screen settings
         self.SCREEN_WIDTH = 800
         self.SCREEN_HEIGHT = 500
         self.FPS = 60
-        self.BG_COLOR = pygame.Color(42, 135, 191)
+        self.BG_COLOR = Color(42, 135, 191)
 
         # Player's settings
         self.player_speed = 5
@@ -20,14 +22,14 @@ class Settings:
 
         # Block's settings
         self.BLOCK_SIZE = 50
-        self.BLOCK_COLOR = pygame.Color(18, 102, 79)
+        self.BLOCK_COLOR = Color(18, 102, 79)
 
         # Enemies' settings
         self.enemy_speed = 3
         self.ENEMY_POINTS = 100
 
         # Font settings
-        self.FONT_COLOR = pygame.Color(255, 255, 255)
+        self.FONT_COLOR = Color(255, 255, 255)
 
         # Limits how far the player can go to the left
         # or right side of the screen until it starts to shift
@@ -54,8 +56,11 @@ class Scoreboard:
     """Class to show scoring information to the player."""
 
     def __init__(
-        self, screen: pygame.Surface, settings: Settings, stats: GameStats
-    ) -> None:
+        self,
+        screen: Surface,
+        settings: Settings,
+        stats: GameStats,
+    ):
         """Initialize all scorekeeping attributes."""
         self.screen = screen
         self.screen_rect = self.screen.get_rect()
@@ -102,7 +107,7 @@ class Scoreboard:
         self.lives_text_rect.topleft = (self.screen_padding, self.screen_padding)
 
         # Creates the heart that represent the player's lives
-        self.hearts = pygame.sprite.Group()
+        self.hearts = Group()
         heart_padding = 0
         for live_number in range(self.stats.lives_left):
             heart = Heart()
@@ -121,14 +126,19 @@ class Scoreboard:
         self.hearts.draw(self.screen)
 
 
-class Block(pygame.sprite.Sprite):
+class Block(Sprite):
     """A class to define each block that makes the level."""
 
-    def __init__(self, color: pygame.Color = None, pattern: bool = True) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        color: Color = None,
+        pattern: bool = True,
+    ):
         """Initializes a block of a fixed size."""
         super().__init__()
 
-        self.settings = Settings()
+        self.settings = settings
 
         if not color:
             self.color = self.settings.BLOCK_COLOR
@@ -136,7 +146,7 @@ class Block(pygame.sprite.Sprite):
             self.color = color
 
         self.size = self.settings.BLOCK_SIZE
-        self.image = pygame.Surface((self.size, self.size))
+        self.image = Surface((self.size, self.size))
         self.rect = self.image.get_rect()
 
         if pattern:
@@ -176,14 +186,14 @@ class Block(pygame.sprite.Sprite):
         )
 
 
-class Enemy(pygame.sprite.Sprite):
+class Enemy(Sprite):
     """A class to create and control an enemy."""
 
-    def __init__(self):
+    def __init__(self, settings: Settings):
         """Initializes the enemy image and rect."""
         super().__init__()
 
-        self.settings = Settings()
+        self.settings = settings
         self.image = pygame.image.load(r"assets\monster.png").convert_alpha()
         self.rect = self.image.get_rect()
 
@@ -193,7 +203,7 @@ class Enemy(pygame.sprite.Sprite):
         # Set the current direction of the enemy
         self.change_x = self.settings.enemy_speed
 
-    def update(self, platform_limits: pygame.sprite.Group):
+    def update(self, platform_limits: Group):
         """Updates the position of the enemy."""
         # Moves the enemy right or left on the platform
         self.rect.x += self.change_x
@@ -209,10 +219,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.bottomleft = coordinate
 
 
-class Heart(pygame.sprite.Sprite):
+class Heart(Sprite):
     """Class to create the shape of a heart to represent the player's lives."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initializes the heart shape, and puts it inside an image."""
         super().__init__()
 
@@ -235,14 +245,14 @@ class Heart(pygame.sprite.Sprite):
             "_______##_______",
         ]
         self._C_ALPHA = 175
-        self._C_RED = pygame.Color(255, 0, 0, self._C_ALPHA)
-        self._C_DARK_RED = pygame.Color(175, 0, 0, self._C_ALPHA)
-        self._C_BLACK = pygame.Color(0, 0, 0, self._C_ALPHA)
-        self._C_WHITE = pygame.Color(255, 255, 255, self._C_ALPHA)
+        self._C_RED = Color(255, 0, 0, self._C_ALPHA)
+        self._C_DARK_RED = Color(175, 0, 0, self._C_ALPHA)
+        self._C_BLACK = Color(0, 0, 0, self._C_ALPHA)
+        self._C_WHITE = Color(255, 255, 255, self._C_ALPHA)
         self._pixel_size = 2
         self._size = self._pixel_size * len(self._shape)
 
-        self.image = pygame.Surface((self._size, self._size), flags=pygame.SRCALPHA)
+        self.image = Surface((self._size, self._size), flags=pygame.SRCALPHA)
         self.rect = self.image.get_rect()
 
         self._draw_shape()
@@ -287,10 +297,10 @@ class Heart(pygame.sprite.Sprite):
         self.rect.y = y
 
 
-class Coin(pygame.sprite.Sprite):
+class Coin(Sprite):
     """Class to create a coin sprite on the level."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize the coin image and position on the screen."""
         super().__init__()
 
@@ -305,15 +315,15 @@ class Coin(pygame.sprite.Sprite):
 class Level:
     """A generic super-class used to define a level."""
 
-    def __init__(self, game: "Platformer") -> None:
+    def __init__(self, screen: Surface, settings: Settings):
         """Initializes all sprite groups of the level."""
-        self.screen = game.screen
-        self.settings = game.settings
+        self.screen = screen
+        self.settings = settings
 
         # Groups to keep track of the level's sprites
-        self.platforms = pygame.sprite.Group()
-        self.enemies = pygame.sprite.Group()
-        self.platform_limits = pygame.sprite.Group()
+        self.platforms = Group()
+        self.enemies = Group()
+        self.platform_limits = Group()
 
         # Keeps track of the starting position of the player
         self.player_start_pos = pygame.Vector2(0, 0)
@@ -366,13 +376,13 @@ class Level:
 
     def _create_platform(self, coordinate: pygame.Vector2) -> None:
         """Create a new block and add it to the level's platforms."""
-        new_block = Block()
+        new_block = Block(self.settings)
         new_block.set_bottomleft(coordinate)
         self.platforms.add(new_block)
 
     def _create_enemy(self, coordinate: pygame.Vector2) -> None:
         """Create a new enemy and add it to the level's enemies."""
-        new_enemy = Enemy()
+        new_enemy = Enemy(self.settings)
         new_enemy.set_bottomleft(coordinate)
         self.enemies.add(new_enemy)
 
@@ -380,7 +390,7 @@ class Level:
         """Create a new transparent block and add it to the level's
         platform_limits.
         """
-        new_enemy_limit = Block(self.settings.BG_COLOR, False)
+        new_enemy_limit = Block(self.settings, self.settings.BG_COLOR, False)
         new_enemy_limit.set_bottomleft(coordinate)
         self.platform_limits.add(new_enemy_limit)
 
@@ -394,14 +404,14 @@ class Level:
         # Add the left padding of blocks to the level
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(-left_padding, 0, block_size):
-                new_block = Block()
+                new_block = Block(self.settings)
                 new_block.set_bottomleft(pygame.Vector2(current_x, current_y))
                 self.platforms.add(new_block)
 
         # Add the right padding of blocks to the level
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(level_size, level_size + right_padding, block_size):
-                new_block = Block()
+                new_block = Block(self.settings)
                 new_block.set_bottomleft(pygame.Vector2(current_x, current_y))
                 self.platforms.add(new_block)
 
@@ -425,9 +435,9 @@ class Level:
 class Level_01(Level):
     """A class that defines the layout of level 1."""
 
-    def __init__(self, game: "Platformer"):
+    def __init__(self, screen: Surface, settings: Settings):
         """Creates level 1 of the game."""
-        super().__init__(game)
+        super().__init__(screen, settings)
 
         # The level layout
         self.level = [
@@ -443,15 +453,14 @@ class Level_01(Level):
         self._create(self.level, self.level_size)
 
 
-class Player(pygame.sprite.Sprite):
+class Player(Sprite):
     """A class to create and control the robot player."""
 
-    def __init__(self, game: "Platformer") -> None:
+    def __init__(self, screen: Surface, settings: Settings):
         """Initialize the robot player and its position"""
         super().__init__()
-
-        self.screen = game.screen
-        self.settings = game.settings
+        self.screen = screen
+        self.settings = settings
 
         # Load the robot image and get its rect
         self.image = pygame.image.load(r"assets/robot.png").convert_alpha()
@@ -470,8 +479,13 @@ class Player(pygame.sprite.Sprite):
         self.change_x = 0
         self.change_y = 0
 
-        # Needed to access the level's platforms
-        self.level = None
+    def load_level_platforms(self, platforms: Group) -> None:
+        """Load the current level's platforms.
+
+        This is needed so the player can know if its colliding with a
+        platform and to react accordingly.
+        """
+        self.level_platforms = platforms
 
     def update(self):
         """Update the robot's position based on its x and y speeds."""
@@ -524,7 +538,7 @@ class Player(pygame.sprite.Sprite):
     def _check_horizontal_collisions(self) -> None:
         """Check if the player hit anything in the x-axis. If so, update the position
         so it doesn't go through the object."""
-        platform_hits = pygame.sprite.spritecollide(self, self.level.platforms, False)
+        platform_hits = pygame.sprite.spritecollide(self, self.level_platforms, False)
         for platform in platform_hits:
             # Player was moving right
             if self.change_x > 0:
@@ -536,7 +550,7 @@ class Player(pygame.sprite.Sprite):
     def _check_vertical_collisions(self) -> None:
         """Check if the player hit anything in the y-axis. If so, update the position
         so it doesn't go through the object."""
-        platform_hits = pygame.sprite.spritecollide(self, self.level.platforms, False)
+        platform_hits = pygame.sprite.spritecollide(self, self.level_platforms, False)
         for platform in platform_hits:
             # Player was moving down
             if self.change_y > 0:
@@ -553,7 +567,7 @@ class Player(pygame.sprite.Sprite):
 class Platformer:
     """The main platformer class, use to create and run the game."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize the game an create all resorces needed."""
         pygame.init()
         self.clock = pygame.time.Clock()
@@ -570,19 +584,18 @@ class Platformer:
         self.scoreboard = Scoreboard(self.screen, self.settings, self.stats)
 
         # Creates the robot the player can control
-        self.player = Player(self)
-        self.player_group = pygame.sprite.GroupSingle(self.player)
+        self.player = Player(self.screen, self.settings)
 
         # Create all the levels
         self.level_list: list[Level] = []
-        self.level_list.append(Level_01(self))
+        self.level_list.append(Level_01(self.screen, self.settings))
 
         # Set the current level
         self.current_level = self.level_list[self.stats.level]
 
-        # The player needs the current level to know if it's colliding with
-        # a platform
-        self.player.level = self.current_level
+        # The player needs the current level's platforms to check if it's
+        # colliding with any of them
+        self.player.load_level_platforms(self.current_level.platforms)
 
         # Set the player position at the start of the game
         self.player.set_bottomleft(self.current_level.player_start_pos)
