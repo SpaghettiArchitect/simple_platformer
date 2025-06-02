@@ -27,7 +27,7 @@ class Settings:
         self.ENEMY_POINTS = 100
 
         # Font settings
-        self.FONT_COLOR = pygame.Color(0, 0, 0)
+        self.FONT_COLOR = pygame.Color(255, 255, 255)
 
         # Limits how far the player can go to the left
         # or right side of the screen until it starts to shift
@@ -62,6 +62,8 @@ class Scoreboard:
         self.settings = settings
         self.stats = stats
 
+        self.screen_padding = 10
+
         # Font settings to display information
         self.text_color = self.settings.FONT_COLOR
         self.text_font = pygame.font.SysFont(None, 24)
@@ -82,27 +84,40 @@ class Scoreboard:
 
         # Display the score at the top-right side of the screen
         self.score_text_rect = self.score_text.get_rect()
-        self.score_text_rect.topright = (self.screen_rect.right - 10, 10)
+        self.score_text_rect.topright = (
+            self.screen_rect.right - self.screen_padding,
+            self.screen_padding,
+        )
         self.score_number_rect = self.score_number.get_rect()
         self.score_number_rect.topright = self.score_text_rect.bottomright
 
     def prep_hearts(self) -> None:
         """Show how many lives are left."""
-        self.hearts = pygame.sprite.Group()
+        # Text image that will be rendered above the hearts
+        lives_str = "LIVES"
+        self.lives_text = self.text_font.render(lives_str, True, self.text_color)
 
-        left_padding = 0
+        # Display the text at the top-left corner of the screen
+        self.lives_text_rect = self.lives_text.get_rect()
+        self.lives_text_rect.topleft = (self.screen_padding, self.screen_padding)
+
+        # Creates the heart that represent the player's lives
+        self.hearts = pygame.sprite.Group()
+        heart_padding = 0
         for live_number in range(self.stats.lives_left):
             heart = Heart()
-            x_pos = left_padding + 20 + live_number * heart.rect.width
-            y_pos = 20
+            # Position each heart just below the text
+            x_pos = self.screen_padding + heart_padding + live_number * heart.rect.width
+            y_pos = self.lives_text_rect.bottom
             heart.set_position(x_pos, y_pos)
             self.hearts.add(heart)
-            left_padding += 3  # Adds a small padding between each heart
+            heart_padding += 3  # Adds a small padding between each heart
 
     def draw_score(self) -> None:
         """Draw score and lives left to the screen."""
         self.screen.blit(self.score_text, self.score_text_rect)
         self.screen.blit(self.score_number, self.score_number_rect)
+        self.screen.blit(self.lives_text, self.lives_text_rect)
         self.hearts.draw(self.screen)
 
 
@@ -219,10 +234,11 @@ class Heart(pygame.sprite.Sprite):
             "______####______",
             "_______##_______",
         ]
-        self._C_RED = pygame.Color(255, 0, 0, 200)
-        self._C_DARK_RED = pygame.Color(175, 0, 0, 200)
-        self._C_BLACK = pygame.Color(0, 0, 0, 200)
-        self._C_WHITE = pygame.Color(255, 255, 255, 200)
+        self._C_ALPHA = 175
+        self._C_RED = pygame.Color(255, 0, 0, self._C_ALPHA)
+        self._C_DARK_RED = pygame.Color(175, 0, 0, self._C_ALPHA)
+        self._C_BLACK = pygame.Color(0, 0, 0, self._C_ALPHA)
+        self._C_WHITE = pygame.Color(255, 255, 255, self._C_ALPHA)
         self._pixel_size = 2
         self._size = self._pixel_size * len(self._shape)
 
