@@ -287,6 +287,21 @@ class Heart(pygame.sprite.Sprite):
         self.rect.y = y
 
 
+class Coin(pygame.sprite.Sprite):
+    """Class to create a coin sprite on the level."""
+
+    def __init__(self) -> None:
+        """Initialize the coin image and position on the screen."""
+        super().__init__()
+
+        self.image = pygame.image.load(r"assets\coin.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+    def set_center(self, x: int, y: int) -> None:
+        """Position the center of the coin at the given coordinate."""
+        self.rect.center = (x, y)
+
+
 class Level:
     """A generic super-class used to define a level."""
 
