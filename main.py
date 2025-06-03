@@ -166,34 +166,76 @@ class Block(Sprite):
         less two dimensional.
         """
         # Top triangle
-        pygame.draw.polygon(
-            self.image,
-            self.color.correct_gamma(0.7),
-            (self.rect.topleft, self.rect.topright, self.rect.center),
-        )
+        top_points = (self.rect.topleft, self.rect.topright, self.rect.center)
+        self._draw_triangle(top_points, 0.7)
+
         # Right triangle
-        pygame.draw.polygon(
-            self.image,
-            self.color.correct_gamma(0.9),
-            (self.rect.topright, self.rect.bottomright, self.rect.center),
-        )
+        right_points = (self.rect.topright, self.rect.bottomright, self.rect.center)
+        self._draw_triangle(right_points, 0.9)
+
         # Bottom triangle
-        pygame.draw.polygon(
-            self.image,
-            self.color,
-            (self.rect.bottomleft, self.rect.bottomright, self.rect.center),
-        )
+        bottom_points = (self.rect.bottomleft, self.rect.bottomright, self.rect.center)
+        self._draw_triangle(bottom_points)
+
         # Left triangle
-        pygame.draw.polygon(
+        left_points = (self.rect.bottomleft, self.rect.topleft, self.rect.center)
+        self._draw_triangle(left_points, 0.8)
+
+        # Draw lines for better contrast
+        self._draw_lines()
+
+    def _draw_triangle(self, points: tuple[int], gamma: float = 1) -> None:
+        """Draw a triangular shape inside the block. The color to fill the
+        shape with is taken from self.color.
+
+        - points: the cordinates that make the vertices of the shape.
+        - gamma (optional): controls the brightness of the color.
+        """
+        # Check if exactly three coordinates where provided
+        if len(points) != 3:
+            raise ValueError(
+                f"The triangle needs to have exactly 3 points, you provided {len(points)}"
+            )
+        # Draws the triangular shape
+        pygame.draw.polygon(self.image, self.color.correct_gamma(gamma), points)
+
+    def _draw_lines(self, color: Color = None) -> None:
+        """Draw two diagonal lines inside the block, and another two lines
+        on the left and top sides of the block.
+
+        - color (optional): the color of the lines. If no color is provided
+        the one in self.color will be used.
+        """
+        # Check for color
+        if color is None:
+            color = self.color
+
+        # Diagonal lines
+        pygame.draw.line(
             self.image,
-            self.color.correct_gamma(0.8),
-            (self.rect.bottomleft, self.rect.topleft, self.rect.center),
+            color,
+            self.rect.topleft,
+            self.rect.bottomright,
         )
         pygame.draw.line(
-            self.image, self.color, self.rect.topleft, self.rect.bottomright
+            self.image,
+            color,
+            self.rect.bottomleft,
+            self.rect.topright,
+        )
+
+        # Top side and left side lines
+        pygame.draw.line(
+            self.image,
+            color,
+            self.rect.topleft,
+            self.rect.topright,
         )
         pygame.draw.line(
-            self.image, self.color, self.rect.bottomleft, self.rect.topright
+            self.image,
+            color,
+            self.rect.topleft,
+            self.rect.bottomleft,
         )
 
 
