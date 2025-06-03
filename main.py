@@ -2,7 +2,7 @@ import sys
 
 import pygame
 from pygame import Color, Surface, Vector2
-from pygame.sprite import Group, Sprite
+from pygame.sprite import Group, GroupSingle, Sprite
 
 
 class Settings:
@@ -243,7 +243,7 @@ class Enemy(Sprite):
     """A class to create and control an enemy."""
 
     def __init__(self, settings: Settings):
-        """Initializes the enemy image and rect."""
+        """Initializes the enemy object with all required attributes."""
         super().__init__()
 
         self.settings = settings
@@ -257,7 +257,7 @@ class Enemy(Sprite):
         # of the enemy image
         self.top_limit = 13
 
-        # Set the current direction of the enemy
+        # Set the current speed and direction of movement
         self.change_x = self.settings.enemy_speed
 
     def update(self, platform_limits: Group):
@@ -379,6 +379,21 @@ class Coin(Sprite):
         self.rect.center = coordinate
 
 
+class Door(Sprite):
+    """A class to create a door for the level."""
+
+    def __init__(self):
+        """Initialize the door object with all required attributes."""
+        super().__init__()
+
+        self.image = pygame.image.load(r"assets\door.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+    def set_bottomleft(self, coordinate: Vector2) -> None:
+        """Set the bottomleft position of the door relative to the screen."""
+        self.rect.bottomleft = coordinate
+
+
 class Level:
     """A generic super-class used to define a level."""
 
@@ -392,6 +407,7 @@ class Level:
         self.coins = Group()
         self.enemies = Group()
         self.platform_limits = Group()
+        self.door = GroupSingle()
 
         # Keeps track of the starting position of the player
         self.player_start_pos = Vector2(0, 0)
@@ -404,6 +420,7 @@ class Level:
         """Update everything in this level."""
         self.platforms.update()
         self.platform_limits.update()
+        self.door.update()
         self.coins.update()
         self.enemies.update(self.platform_limits)
 
@@ -416,6 +433,7 @@ class Level:
         # Draw all the sprites that we have
         self.platforms.draw(self.screen)
         self.platform_limits.draw(self.screen)
+        self.door.draw(self.screen)
         self.coins.draw(self.screen)
         self.enemies.draw(self.screen)
 
@@ -438,6 +456,8 @@ class Level:
                 elif object_type == "P":
                     self.player_start_pos.x = current_pos.x
                     self.player_start_pos.y = current_pos.y
+                elif object_type == "D":
+                    self._create_door(current_pos)
 
                 current_pos.x += self.settings.BLOCK_SIZE
 
@@ -448,13 +468,19 @@ class Level:
         self._add_level_limits(level_size)
 
     def _create_platform(self, coordinate: Vector2) -> None:
-        """Create a new block and add it to the level's platforms."""
+        """Create a new block and add it to the level's platforms.
+
+        - coordinate: the position of the platform on the level.
+        """
         new_block = Block(self.settings)
         new_block.set_bottomleft(coordinate)
         self.platforms.add(new_block)
 
     def _create_coin(self, coordinate: Vector2) -> None:
-        """Create a new coin sprite and add it to the level's coins."""
+        """Create a new coin sprite and add it to the level's coins.
+
+        - coordinate: the position of the coin on the level.
+        """
         # Get the center of what would've been a block
         offset = self.settings.BLOCK_SIZE // 2
         coord_center = Vector2(coordinate.x + offset, coordinate.y - offset)
@@ -465,7 +491,10 @@ class Level:
         self.coins.add(new_coin)
 
     def _create_enemy(self, coordinate: Vector2) -> None:
-        """Create a new enemy and add it to the level's enemies."""
+        """Create a new enemy and add it to the level's enemies.
+
+        - coordinate: the position of the enemy on the level.
+        """
         new_enemy = Enemy(self.settings)
         new_enemy.set_bottomleft(coordinate)
         self.enemies.add(new_enemy)
@@ -473,10 +502,22 @@ class Level:
     def _create_enemy_limit(self, coordinate: Vector2) -> None:
         """Create a new transparent block and add it to the level's
         platform_limits.
+
+        - coordinate: the postion of the block limit on the level.
         """
         new_enemy_limit = Block(self.settings, self.settings.BG_COLOR, False)
         new_enemy_limit.set_bottomleft(coordinate)
         self.platform_limits.add(new_enemy_limit)
+
+    def _create_door(self, coordinate: Vector2) -> None:
+        """Create a new door and add it to the door's group. There should be
+        only one door peer level.
+
+        - coordinate: the position of the door on the level.
+        """
+        new_door = Door()
+        new_door.set_bottomleft(coordinate)
+        self.door.add(new_door)
 
     def _add_level_limits(self, level_size: int) -> None:
         """Add blocks to the left and right side to define the level's boundaries."""
@@ -503,6 +544,8 @@ class Level:
         """Shifts the whole level right or left, depending of the player's movement."""
         # Keep track of the shift amount
         self.level_shift += shift_x
+
+        # Move the player's starter position
         self.player_start_pos.x += shift_x
 
         # Shift all the level sprites
@@ -518,6 +561,9 @@ class Level:
         for limit in self.platform_limits:
             limit.rect.x += shift_x
 
+        # Move the door's position
+        self.door.sprite.rect.x += shift_x
+
 
 class Level_01(Level):
     """A class that defines the layout of level 1."""
@@ -528,10 +574,10 @@ class Level_01(Level):
 
         # The level layout
         self.level = [
-            "________CC",
-            "_______C__C",
-            "__#CCEC#__#CCECC#__XX",
-            "___XXXX____XXXXX",
+            "________CC_____________",
+            "_______C__C_________D__",
+            "__#CCEC#__#CCECC#__XXX_",
+            "___XXXX____XXXXX_______",
             "",
             "P",
             "XXXXXXXXXXXXXXXXXXXXXXX",
