@@ -253,6 +253,10 @@ class Enemy(Sprite):
         # Used for collision detection with the player
         self.mask = pygame.mask.from_surface(self.image)
 
+        # Every value below this limit will be consider to be the top
+        # of the enemy image
+        self.top_limit = 13
+
         # Set the current direction of the enemy
         self.change_x = self.settings.enemy_speed
 
@@ -606,6 +610,13 @@ class Player(Sprite):
             self.change_y = -15
             self.on_ground = False  # Player is now in the air
 
+    def bounce(self) -> None:
+        """Make the player jump a little after hitting the top of
+        an enemy.
+        """
+        if not self.on_ground:
+            self.change_y = -7
+
     def draw_me(self) -> None:
         """Draw the robot at the current location."""
         self.screen.blit(self.image, self.rect)
@@ -733,33 +744,51 @@ class Platformer:
     def _check_player_enemy_collisions(self) -> None:
         """Checks if the player has collided with any enemy using masks.
 
-        If the player is falling down and collides with the top of the enemy
-        mask, the enemy is deleted and the player bounces a little.
-
-        If the player touches any other part of the enemy, the player loses a
-        life and its position is restarted to the start of the level.
+        - If the player is falling down and collides with the top of the
+        enemy mask, the enemy is deleted and the player bounces a little.
+        - If the player touches any other part of the enemy, the player
+        loses a life and their position is restarted to the start of the
+        level.
         """
         enemy_hit = pygame.sprite.spritecollideany(
-            self.player, self.current_level.enemies
+            self.player,
+            self.current_level.enemies,
+            collided=pygame.sprite.collide_mask,
         )
 
         if enemy_hit is not None:
-            point_of_collision = pygame.sprite.collide_mask(enemy_hit, self.player)
-            if point_of_collision is not None:
-                # If the player collides with the head of an enemy and it's
-                # falling down after jumping
-                if point_of_collision[1] <= 15 and self.player.change_y > 0:
-                    self.player.change_y = -6  # Make a little jump
-                    self.stats.score += self.settings.ENEMY_POINTS
-                    self.scoreboard.prep_score()
-                    enemy_hit.kill()
-                # The player collided with any other part of the enemy
-                else:
-                    pygame.time.wait(500)
-                    if self.stats.lives_left > 0:
-                        self.stats.lives_left -= 1
-                        self.scoreboard.prep_hearts()
-                        self.player.set_bottomleft(self.current_level.player_start_pos)
+            # Get the point of collision
+            point_of_collision = pygame.sprite.collide_mask(
+                enemy_hit,
+                self.player,
+            )
+
+            # We compare the y-value of the collision point with the top
+            # limit of the enemy hit
+            hits_top_of_enemy = point_of_collision[1] <= enemy_hit.top_limit
+
+            # If the player collides with the top of an enemy and they are
+            # falling down after jumping
+            if hits_top_of_enemy and not self.player.on_ground:
+                self._enemy_hit(enemy_hit)
+            # The player collided with any other part of the enemy
+            else:
+                self._player_hit()
+
+    def _enemy_hit(self, enemy: Enemy) -> None:
+        """Respond to the enemy being hit from the top by the player."""
+        self.player.bounce()  # Make a little jump
+        self.stats.score += self.settings.ENEMY_POINTS
+        self.scoreboard.prep_score()
+        enemy.kill()
+
+    def _player_hit(self) -> None:
+        """Respond to the player being hit by an enemy."""
+        pygame.time.wait(500)
+        if self.stats.lives_left > 1:
+            self.stats.lives_left -= 1
+            self.scoreboard.prep_hearts()
+            self.player.set_bottomleft(self.current_level.player_start_pos)
 
     def _check_player_coin_collisions(self) -> None:
         """Check if the player has collided with any coin. If so, augment
