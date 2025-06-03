@@ -482,7 +482,9 @@ class Level_01(Level):
 
         # The level layout
         self.level = [
-            "__#CCEC#__#CCECC#__XX__",
+            "________CC",
+            "_______C__C",
+            "__#CCEC#__#CCECC#__XX",
             "___XXXX____XXXXX",
             "",
             "P",
@@ -613,6 +615,10 @@ class Platformer:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.settings = Settings()
+
+        # Create the icon of the application
+        self.icon = Heart().image
+        pygame.display.set_icon(self.icon)
 
         # Creates the window and sets the caption
         self.screen = pygame.display.set_mode(
