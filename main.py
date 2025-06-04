@@ -15,6 +15,7 @@ class Settings:
         self.SCREEN_HEIGHT = 500
         self.FPS = 60
         self.BG_COLOR = Color(18, 148, 199)
+        self.GAME_TITLE = "Robot Platformer"
 
         # Player's settings
         self.player_speed = 5
@@ -145,8 +146,7 @@ class Button(Sprite):
         - text: the string text inside the button.
         - text_size (optional): the size to render the text.
         - text_color (optional): the color to render the text.
-        - bg_color (optional): the color to fill the text's and button's
-        background.
+        - bg_color (optional): the color to fill the button with.
         - padding (optional): the total left and top padding that would be
         added to the button size.
         """
@@ -156,7 +156,7 @@ class Button(Sprite):
         self._font = pygame.font.SysFont(None, text_size)
 
         # Initialize the text image and its rect
-        self._txt_image = self._font.render(text, True, text_color, bg_color)
+        self._txt_image = self._font.render(text, True, text_color)
         self._txt_rect = self._txt_image.get_rect()
 
         # Calculate the button's width and height based on the padding
@@ -445,6 +445,7 @@ class Level:
         """Initializes all sprite groups of the level."""
         self.screen = screen
         self.settings = settings
+        self.color = self.settings.BG_COLOR
 
         # Groups to keep track of the level's sprites
         self.platforms = Group()
@@ -470,9 +471,8 @@ class Level:
 
     def draw(self) -> None:
         """Draw everything on this level."""
-
         # Draw the background
-        self.screen.fill(self.settings.BG_COLOR)
+        self.screen.fill(self.color)
 
         # Draw all the sprites that we have
         self.platforms.draw(self.screen)
@@ -549,7 +549,7 @@ class Level:
 
         - coordinate: the postion of the block limit on the level.
         """
-        new_enemy_limit = Block(self.settings, self.settings.BG_COLOR, False)
+        new_enemy_limit = Block(self.settings, self.color, False)
         new_enemy_limit.set_bottomleft(coordinate)
         self.platform_limits.add(new_enemy_limit)
 
@@ -607,6 +607,91 @@ class Level:
 
         # Move the door's position
         self.door.sprite.rect.x += shift_x
+
+
+class MainMenu(Level):
+    """Class to create a menu screen when starting the game."""
+
+    def __init__(self, screen: Surface, settings: Settings):
+        """Initialize the menu as if it was a another level.
+
+        - screen: surface were the level will be drawn.
+        - settings: the current game's settings instance.
+        """
+        super().__init__(screen, settings)
+
+        self.screen = screen
+        self.screen_rect = self.screen.get_rect()
+        self.settings = settings
+
+        # This colors will be needed to create buttons and text
+        self.bg_color = Color(30, 30, 30)
+        self.text_color = Color(255, 255, 255)
+
+        # The pattern for this level
+        self.level = [
+            "X______________X",
+            "XX____________XX",
+            "XXXXXXXXXXXXXXXX",
+        ]
+
+        self.level_size = len(self.level[-1]) * self.settings.BLOCK_SIZE
+        self._create(self.level, self.level_size)
+
+        # Create the title for the game and the button to start it
+        self._create_title()
+        self._create_title_hearts()
+        self._create_button()
+
+        # Set the player's position on this level
+        self.player_start_pos = self.start_btn.rect.midtop
+
+    def _create_title(self) -> None:
+        """Add the title for the game on the current screen."""
+        self.font = pygame.font.SysFont(None, 52)
+        # Title image that will be rendered
+        self.title_image = self.font.render(
+            self.settings.GAME_TITLE.upper(),
+            True,
+            self.text_color,
+        )
+        self.title_image_rect = self.title_image.get_rect()
+
+        # Position the image in the screen
+        self.title_image_rect.midtop = (self.screen_rect.centerx, 100)
+
+    def _create_title_hearts(self) -> None:
+        """Add two hearts as decorations at the left and right side of the
+        title.
+        """
+        self.heart_left = Heart()
+        self.heart_left.rect.midright = self.title_image_rect.midleft
+
+        self.heart_right = Heart()
+        self.heart_right.rect.midleft = self.title_image_rect.midright
+
+    def _create_button(self) -> None:
+        """Create the start game button and set its position."""
+        self.start_btn = Button(
+            "START GAME",
+            32,
+            self.text_color,
+            self.settings.BLOCK_COLOR,
+        )
+        self.start_btn.rect.center = self.screen_rect.center
+        self.platforms.add(self.start_btn)
+
+    def update(self):
+        """Update the platform sprites for the Menu."""
+        self.platforms.update()
+
+    def draw(self) -> None:
+        """Draw all images and sprites of the Menu to the screen."""
+        self.screen.fill(self.bg_color)
+        self.screen.blit(self.title_image, self.title_image_rect)
+        self.screen.blit(self.heart_right.image, self.heart_right.rect)
+        self.screen.blit(self.heart_left.image, self.heart_left.rect)
+        self.platforms.draw(self.screen)
 
 
 class Level_01(Level):
@@ -767,7 +852,7 @@ class Platformer:
         self.screen = pygame.display.set_mode(
             (self.settings.SCREEN_WIDTH, self.settings.SCREEN_HEIGHT)
         )
-        pygame.display.set_caption("Robot Platfomer")
+        pygame.display.set_caption(self.settings.GAME_TITLE)
 
         # Create an instance to store game statistics and scoreboard
         self.stats = GameStats(self.settings)
@@ -776,19 +861,23 @@ class Platformer:
         # Creates the robot the player can control
         self.player = Player(self.screen, self.settings)
 
-        # Create all the levels
-        self.level_list: list[Level] = []
-        self.level_list.append(Level_01(self.screen, self.settings))
+        # The list to hold the loaded levels
+        self.level_list = []
+
+        # The state of the game
+        self.game_active = False
+
+        self.menu = MainMenu(self.screen, self.settings)
 
         # Set the current level
-        self.current_level = self.level_list[self.stats.level]
+        self.current_level = self.menu
 
         # The player needs the current level's platforms to check if it's
         # colliding with any of them
         self.player.load_level_platforms(self.current_level.platforms)
 
         # Set the player position at the start of the game
-        self.player.set_bottomleft(self.current_level.player_start_pos)
+        self.player.rect.midbottom = self.menu.player_start_pos
 
     def run_game(self) -> None:
         """Starts the main loop of the game."""
@@ -797,9 +886,11 @@ class Platformer:
             self._check_events()
             self.current_level.update()
             self.player.update()
-            self._update_level_shift()
-            self._check_player_enemy_collisions()
-            self._check_player_coin_collisions()
+
+            if self.game_active:
+                self._update_level_shift()
+                self._check_player_enemy_collisions()
+                self._check_player_coin_collisions()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -814,6 +905,10 @@ class Platformer:
 
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+
+            elif not self.game_active and event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_start_button(mouse_pos)
 
     def _check_keydown_events(self, event: pygame.event.Event) -> None:
         """Respond to keypresses."""
@@ -830,6 +925,35 @@ class Platformer:
             self.player.moving_right = False
         elif event.key == pygame.K_LEFT:
             self.player.moving_left = False
+
+    def _check_start_button(self, mouse_pos: tuple[int, int]) -> None:
+        """Check if the start game button on the MainMenu level has been
+        pressed. If so, reset all stats, create the levels, load the player
+        and set the mouse cursor to invisible.
+
+        - mouse_pos: the current position of the mouse on the screen.
+        """
+        start_pressed = self.menu.start_btn.rect.collidepoint(mouse_pos)
+
+        if start_pressed:
+            # Reset the game statistics
+            self.stats.reset_statistics()
+            self.scoreboard.prep_score()
+            self.scoreboard.prep_hearts()
+
+            # Load levels
+            self.level_list.clear()
+            self.level_list.append(Level_01(self.screen, self.settings))
+            self.current_level = self.level_list[self.stats.level]
+
+            # Set the player's postition on the current level
+            self.player.load_level_platforms(self.current_level.platforms)
+            self.player.set_bottomleft(self.current_level.player_start_pos)
+
+            self.game_active = True
+
+            # Hide the mouse cursor
+            pygame.mouse.set_visible(False)
 
     def _check_player_enemy_collisions(self) -> None:
         """Checks if the player has collided with any enemy using masks.
@@ -915,7 +1039,8 @@ class Platformer:
         """Update all game elements and flip the screen."""
         self.current_level.draw()
         self.player.draw_me()
-        self.scoreboard.draw_score()
+        if self.game_active:
+            self.scoreboard.draw_score()
         pygame.display.flip()
 
 

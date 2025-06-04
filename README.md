@@ -19,4 +19,4 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
 - [x] Implement scoring system.
 - [ ] Implement game over system (when the player has no lives left).
 - [ ] Add door to end the level.
-- [ ] Implement starting screen.
+- [x] Implement starting screen.
