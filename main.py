@@ -129,6 +129,50 @@ class Scoreboard:
         self.hearts.draw(self.screen)
 
 
+class Button(Sprite):
+    """Class to create a new button."""
+
+    def __init__(
+        self,
+        text: str,
+        text_size: int = 48,
+        text_color: Color = Color(0, 0, 0),
+        bg_color: Color = Color(255, 255, 255),
+        padding: Vector2 = Vector2(20, 20),
+    ):
+        """Initilizes a new button.
+
+        - text: the string text inside the button.
+        - text_size (optional): the size to render the text.
+        - text_color (optional): the color to render the text.
+        - bg_color (optional): the color to fill the text's and button's
+        background.
+        - padding (optional): the total left and top padding that would be
+        added to the button size.
+        """
+        super().__init__()
+
+        # Initialize the font to use
+        self._font = pygame.font.SysFont(None, text_size)
+
+        # Initialize the text image and its rect
+        self._txt_image = self._font.render(text, True, text_color, bg_color)
+        self._txt_rect = self._txt_image.get_rect()
+
+        # Calculate the button's width and height based on the padding
+        self._button_width = self._txt_rect.width + padding.x
+        self._button_height = self._txt_rect.height + padding.y
+
+        # Initialize the buttom surface and its rect
+        self.image = Surface((self._button_width, self._button_height))
+        self.image.fill(bg_color)
+        self.rect = self.image.get_rect()
+
+        # Puts the text image at the center of the button
+        self._txt_rect.center = self.rect.center
+        self.image.blit(self._txt_image, self._txt_rect)
+
+
 class Block(Sprite):
     """A class to define each block that makes the level."""
 
