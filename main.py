@@ -709,7 +709,7 @@ class Level_01(Level):
             "___XXXX____XXXXX_______",
             "",
             "P",
-            "XXXXXXXXXXXXXXXXXXXXXXX",
+            "XXXXXXXX__XXXXXXXXXXXXX",
         ]
 
         self.level_size = self.settings.BLOCK_SIZE * len(self.level[-1])
@@ -889,8 +889,7 @@ class Platformer:
 
             if self.game_active:
                 self._update_level_shift()
-                self._check_player_enemy_collisions()
-                self._check_player_coin_collisions()
+                self._check_all_player_collisions()
             self._update_screen()
             self.clock.tick(self.settings.FPS)
 
@@ -955,6 +954,11 @@ class Platformer:
             # Hide the mouse cursor
             pygame.mouse.set_visible(False)
 
+    def _check_player_screen_collisions(self) -> None:
+        """Check if the player is touching the bottom part of the screen."""
+        if self.player.rect.bottom >= self.settings.SCREEN_HEIGHT:
+            self._player_hit()
+
     def _check_player_enemy_collisions(self) -> None:
         """Checks if the player has collided with any enemy using masks.
 
@@ -989,21 +993,6 @@ class Platformer:
             else:
                 self._player_hit()
 
-    def _enemy_hit(self, enemy: Enemy) -> None:
-        """Respond to the enemy being hit from the top by the player."""
-        self.player.bounce()  # Make a little jump
-        self.stats.score += self.settings.ENEMY_POINTS
-        self.scoreboard.prep_score()
-        enemy.kill()
-
-    def _player_hit(self) -> None:
-        """Respond to the player being hit by an enemy."""
-        pygame.time.wait(500)
-        if self.stats.lives_left > 1:
-            self.stats.lives_left -= 1
-            self.scoreboard.prep_hearts()
-            self.player.set_bottomleft(self.current_level.player_start_pos)
-
     def _check_player_coin_collisions(self) -> None:
         """Check if the player has collided with any coin. If so, augment
         the game's score.
@@ -1018,6 +1007,29 @@ class Platformer:
         for _ in coins_hit_list:
             self.stats.score += self.settings.COIN_POINTS
             self.scoreboard.prep_score()
+
+    def _check_all_player_collisions(self) -> None:
+        """Helper funtion to check if the player is colliding with any
+        enemy, coin or the bottom of the screen, and react accordingly.
+        """
+        self._check_player_screen_collisions()
+        self._check_player_enemy_collisions()
+        self._check_player_coin_collisions()
+
+    def _enemy_hit(self, enemy: Enemy) -> None:
+        """Respond to the enemy being hit from the top by the player."""
+        self.player.bounce()  # Make a little jump
+        self.stats.score += self.settings.ENEMY_POINTS
+        self.scoreboard.prep_score()
+        enemy.kill()
+
+    def _player_hit(self) -> None:
+        """Respond to the player being hit by an enemy."""
+        pygame.time.wait(500)
+        if self.stats.lives_left > 1:
+            self.stats.lives_left -= 1
+            self.scoreboard.prep_hearts()
+            self.player.set_bottomleft(self.current_level.player_start_pos)
 
     def _update_level_shift(self) -> None:
         """Shifts the level according to the player's movement and screen limits."""
