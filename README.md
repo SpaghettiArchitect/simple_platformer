@@ -17,6 +17,8 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
 - [x] Add interaction between enemies and the player.
 - [x] Add coins that the player can collect.
 - [x] Implement scoring system.
-- [ ] Implement game over system (when the player has no lives left).
-- [ ] Add door to end the level.
+- [x] Implement game over system (when the player has no lives left or
+      there aren't any levels left).
+- [x] Add door to end the level.
 - [x] Implement starting screen.
+- [ ] Add new levels.
