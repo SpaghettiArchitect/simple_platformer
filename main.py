@@ -482,11 +482,27 @@ class Level:
         self.coins.draw(self.screen)
         self.enemies.draw(self.screen)
 
-    def _create(self, pattern: list[str], level_size: int) -> None:
-        """Creates the structure of the level based on a string pattern."""
-        current_pos = Vector2(0, self.settings.SCREEN_HEIGHT)
+    def _create(self, pattern: list[str]) -> None:
+        """Creates the structure of the level based on a string pattern.
+
+        - pattern: a list of strings, where each character represents an
+        object that will be added to the level.
+            - 'X': a Block object (with a pattern inside).
+            - 'E': an Enemy object.
+            - 'C': a Coin object.
+            - '#': a special kind of Block, used to change the direction
+            of enemies when both of them collide.
+            - 'P': sets the player position at the start of the level.
+            - 'D': a Door object, used to end the level.
+
+        Any other character is ignored, but adds padding between objects.
+        """
+        # Calculate the level size based on the total number of characters
+        # in the last row of the pattern
+        self.level_size = len(pattern[-1]) * self.settings.BLOCK_SIZE
 
         # Add the platforms starting from the bottom-left of the screen
+        current_pos = Vector2(0, self.settings.SCREEN_HEIGHT)
         for row in pattern[::-1]:
             for object_type in row:
                 if object_type == "X":
@@ -510,7 +526,7 @@ class Level:
             current_pos.x = 0
 
         # Add the blocks that confine the player to the level
-        self._add_level_limits(level_size)
+        self._add_level_limits(self.level_size)
 
     def _create_platform(self, coordinate: Vector2) -> None:
         """Create a new block and add it to the level's platforms.
@@ -565,7 +581,10 @@ class Level:
         self.door.add(new_door)
 
     def _add_level_limits(self, level_size: int) -> None:
-        """Add blocks to the left and right side to define the level's boundaries."""
+        """Add blocks to the left and right side to define the level's boundaries.
+
+        - level_size: the total width of the level.
+        """
         left_padding = self.settings.LEFT_SCREEN_LIMIT
         right_padding = self.settings.RIGHT_SCREEN_LIMIT
         screen_height = self.settings.SCREEN_HEIGHT
@@ -586,7 +605,12 @@ class Level:
                 self.platforms.add(new_block)
 
     def shift_level(self, shift_x: int) -> None:
-        """Shifts the whole level right or left, depending of the player's movement."""
+        """Shifts the whole level right or left, depending of the player's movement.
+
+        - shift_x: the total amount to shift the level relative to the screen.
+        If positive, shifts the level to the right. If negative, shift the level
+        to the left.
+        """
         # Keep track of the shift amount
         self.level_shift += shift_x
 
@@ -630,14 +654,14 @@ class MainMenu(Level):
         self.text_color = Color(255, 255, 255)
 
         # The pattern for this level
-        self.level = [
+        self.level_pattern = [
             "X_______________X",
             "XX______P______XX",
             "XXXXXXXXXXXXXXXXX",
         ]
 
-        self.level_size = len(self.level[-1]) * self.settings.BLOCK_SIZE
-        self._create(self.level, self.level_size)
+        # Create the current level
+        self._create(self.level_pattern)
 
         # Create the title for the game and the button to start it
         self._create_title()
@@ -695,7 +719,7 @@ class Level_01(Level):
         super().__init__(screen, settings)
 
         # The level layout
-        self.level = [
+        self.level_pattern = [
             "________CC_____________",
             "_______C__C_________D__",
             "__#CCEC#__#CCECC#__XXX_",
@@ -705,9 +729,8 @@ class Level_01(Level):
             "XXXXXXXX__XXXXXXXXXXXXX",
         ]
 
-        self.level_size = self.settings.BLOCK_SIZE * len(self.level[-1])
-
-        self._create(self.level, self.level_size)
+        # Create the level
+        self._create(self.level_pattern)
 
 
 class GameOver:
