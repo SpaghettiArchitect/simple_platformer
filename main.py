@@ -11,7 +11,7 @@ class Settings:
     def __init__(self):
         """Initialize the game settings."""
         # Screen settings
-        self.SCREEN_WIDTH = 800
+        self.SCREEN_WIDTH = 850
         self.SCREEN_HEIGHT = 500
         self.FPS = 60
         self.BG_COLOR = Color(18, 148, 199)
@@ -631,9 +631,9 @@ class MainMenu(Level):
 
         # The pattern for this level
         self.level = [
-            "X______________X",
-            "XX____________XX",
-            "XXXXXXXXXXXXXXXX",
+            "X_______________X",
+            "XX______P______XX",
+            "XXXXXXXXXXXXXXXXX",
         ]
 
         self.level_size = len(self.level[-1]) * self.settings.BLOCK_SIZE
@@ -643,9 +643,6 @@ class MainMenu(Level):
         self._create_title()
         self._create_title_hearts()
         self._create_button()
-
-        # Set the player's position on this level
-        self.player_start_pos = self.start_btn.rect.midtop
 
     def _create_title(self) -> None:
         """Add the title for the game on the current screen."""
