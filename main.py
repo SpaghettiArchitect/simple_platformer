@@ -752,13 +752,13 @@ class GameOver:
 
     def _create_game_over_text(self) -> None:
         """Creates the 'Game Over' image text and sets its position."""
-        text_font = pygame.font.SysFont(None, 60)
+        text_font = pygame.font.SysFont(None, 72)
 
         # Create the text image and set its position
         self.text_image = text_font.render(
             "GAME OVER",
             True,
-            Color(255, 255, 255),
+            Color(255, 50, 50),
         )
         self.text_image_rect = self.text_image.get_rect()
         self.text_image_rect.center = (self.screen_rect.centerx, 200)
@@ -787,7 +787,7 @@ class GameOver:
             "GO TO MAIN MENU",
             32,
             Color(255, 255, 255),
-            Color(255, 20, 20),
+            Color(88, 115, 22),
         )
         # Set the position of the button just below the score
         self.menu_btn.rect.midtop = self.score_image_rect.midbottom
