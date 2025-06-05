@@ -179,7 +179,7 @@ class Block(Sprite):
     def __init__(
         self,
         settings: Settings,
-        color: Color = None,
+        color: Color,
         pattern: bool = True,
     ):
         """Initializes a block of a fixed size."""
@@ -187,10 +187,7 @@ class Block(Sprite):
 
         self.settings = settings
 
-        if not color:
-            self.color = self.settings.BLOCK_COLOR
-        else:
-            self.color = color
+        self.color = color
 
         self.size = self.settings.BLOCK_SIZE
         self.image = Surface((self.size, self.size))
@@ -446,7 +443,10 @@ class Level:
         """Initializes all sprite groups of the level."""
         self.screen = screen
         self.settings = settings
-        self.color = self.settings.BG_COLOR
+
+        # This colors can be ovewritten on each child level
+        self.bg_color = self.settings.BG_COLOR
+        self.block_color = self.settings.BLOCK_COLOR
 
         # Groups to keep track of the level's sprites
         self.platforms = Group()
@@ -473,7 +473,7 @@ class Level:
     def draw(self) -> None:
         """Draw everything on this level."""
         # Draw the background
-        self.screen.fill(self.color)
+        self.screen.fill(self.bg_color)
 
         # Draw all the sprites that we have
         self.platforms.draw(self.screen)
@@ -497,7 +497,7 @@ class Level:
                 elif object_type == "C":
                     self._create_coin(current_pos)
                 elif object_type == "#":
-                    self._create_enemy_limit(current_pos)
+                    self._create_platform_limit(current_pos)
                 elif object_type == "P":
                     self.player_start_pos.x = current_pos.x
                     self.player_start_pos.y = current_pos.y
@@ -517,7 +517,7 @@ class Level:
 
         - coordinate: the position of the platform on the level.
         """
-        new_block = Block(self.settings)
+        new_block = Block(self.settings, self.block_color)
         new_block.set_bottomleft(coordinate)
         self.platforms.add(new_block)
 
@@ -544,13 +544,13 @@ class Level:
         new_enemy.set_bottomleft(coordinate)
         self.enemies.add(new_enemy)
 
-    def _create_enemy_limit(self, coordinate: Vector2) -> None:
+    def _create_platform_limit(self, coordinate: Vector2) -> None:
         """Create a new transparent block and add it to the level's
         platform_limits.
 
         - coordinate: the postion of the block limit on the level.
         """
-        new_enemy_limit = Block(self.settings, self.color, False)
+        new_enemy_limit = Block(self.settings, self.bg_color, False)
         new_enemy_limit.set_bottomleft(coordinate)
         self.platform_limits.add(new_enemy_limit)
 
@@ -574,14 +574,14 @@ class Level:
         # Add the left padding of blocks to the level
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(-left_padding, 0, block_size):
-                new_block = Block(self.settings)
+                new_block = Block(self.settings, self.block_color)
                 new_block.set_bottomleft(Vector2(current_x, current_y))
                 self.platforms.add(new_block)
 
         # Add the right padding of blocks to the level
         for current_y in range(screen_height, 0, -block_size):
             for current_x in range(level_size, level_size + right_padding, block_size):
-                new_block = Block(self.settings)
+                new_block = Block(self.settings, self.block_color)
                 new_block.set_bottomleft(Vector2(current_x, current_y))
                 self.platforms.add(new_block)
 
@@ -682,17 +682,12 @@ class MainMenu(Level):
         self.start_btn.rect.center = self.screen_rect.center
         self.platforms.add(self.start_btn)
 
-    def update(self):
-        """Update the platform sprites for the Menu."""
-        self.platforms.update()
-
     def draw(self) -> None:
         """Draw all images and sprites of the Menu to the screen."""
-        self.screen.fill(self.bg_color)
+        super().draw()
         self.screen.blit(self.title_image, self.title_image_rect)
         self.screen.blit(self.heart_right.image, self.heart_right.rect)
         self.screen.blit(self.heart_left.image, self.heart_left.rect)
-        self.platforms.draw(self.screen)
 
 
 class Level_01(Level):
