@@ -720,13 +720,39 @@ class Level_01(Level):
 
         # The level layout
         self.level_pattern = [
-            "________CC_____________",
-            "_______C__C_________D__",
-            "__#CCEC#__#CCECC#__XXX_",
-            "___XXXX____XXXXX_______",
-            "",
-            "P",
-            "XXXXXXXX__XXXXXXXXXXXXX",
+            "___________________________D____",
+            "CCCC_____CC________C_______X____",
+            "XXX_C___C__C______C#ECCC#_______",
+            "____C__C____C____C__XXXXC_______",
+            "___#CCEC#__#CCECC#_____XXC_#ECC#",
+            "____XXXX____XXXXXC______XXC_XXX_",
+            "_________________C________C_____",
+            "_P_CCCC_____#CCCEC#__#ECCCCC#___",
+            "XXXXXXX______XXXXX____XXXXXX____",
+        ]
+
+        # Create the level
+        self._create(self.level_pattern)
+
+
+class Level_02(Level):
+    def __init__(self, screen: Surface, settings: Settings):
+        """Creates level 1 of the game."""
+        super().__init__(screen, settings)
+
+        self.bg_color = Color(163, 147, 191)
+        self.block_color = Color(97, 63, 117)
+
+        # The level layout
+        self.level_pattern = [
+            "_#CCCCE#_P#CCCCE##CCE##CCCE##CCCCCE##CCCCE##CCECCC#",
+            "__XXXXX__XXXXXXX__XXX__XXXX__XXXXXX__XXXXX__XXXXXXX",
+            "___________________________________________________",
+            "#CCE##CCCE#__#CCCCE#___#CCCE##CCCCCE#___#CCCCE#___D",
+            "_XXX__XXXX____XXXXX_____XXXX__XXXXXX_____XXXXX___CC",
+            "_________________________________________________XX",
+            "#CCCE##CCCE#__#CCCCE#_#CCCE#__#CCCCCE#____#CCCE#___",
+            "_XXXX__XXXX____XXXXX___XXXX____XXXXXX______XXXX____",
         ]
 
         # Create the level
@@ -1079,7 +1105,7 @@ class Platformer:
 
             # If the player collides with the top of an enemy and they are
             # falling down after jumping
-            if hits_top_of_enemy and not self.player.on_ground:
+            if hits_top_of_enemy and self.player.change_y > 0:
                 self._enemy_hit(enemy_hit)
             # The player collided with any other part of the enemy
             else:
@@ -1157,6 +1183,7 @@ class Platformer:
         """Loads all level and sets the current level."""
         self.level_list.clear()
         self.level_list.append(Level_01(self.screen, self.settings))
+        self.level_list.append(Level_02(self.screen, self.settings))
         self.current_level = self.level_list[self.stats.level]
 
     def _set_player_on_level(self) -> None:
