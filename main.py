@@ -13,7 +13,7 @@ class Settings:
         """Initialize the game settings."""
         # Screen settings
         self.SCREEN_WIDTH = 850
-        self.SCREEN_HEIGHT = 500
+        self.SCREEN_HEIGHT = 600
         self.FPS = 60
         self.BG_COLOR = Color(18, 148, 199)
         self.GAME_TITLE = "Robot Platformer"
@@ -790,7 +790,10 @@ class MainMenu(Level):
         self.title_image_rect = self.title_image.get_rect()
 
         # Position the image in the screen
-        self.title_image_rect.midtop = (self.screen_rect.centerx, 100)
+        self.title_image_rect.center = (
+            self.screen_rect.centerx,
+            self.screen_rect.top + self.screen_rect.height / 4,
+        )
 
     def _create_title_hearts(self) -> None:
         """Add two hearts as decorations at the left and right side of the
@@ -883,7 +886,7 @@ class GameOver:
         self.stats = stats
 
         # Padding between each element
-        self.vertical_padding = 20
+        self.vertical_padding = 50
 
         self._create_game_over_text()
         self._create_score_text()
@@ -900,7 +903,10 @@ class GameOver:
             Color(255, 50, 50),
         )
         self.text_image_rect = self.text_image.get_rect()
-        self.text_image_rect.center = (self.screen_rect.centerx, 200)
+        self.text_image_rect.midbottom = (
+            self.screen_rect.centerx,
+            self.screen_rect.centery - self.vertical_padding,
+        )
 
     def _create_score_text(self) -> None:
         """Creates the score text image and sets its position."""
@@ -929,8 +935,10 @@ class GameOver:
         self.score_number_rect = self.score_number.get_rect()
 
         # Set the position of the score below the game over title
-        self.score_text_rect.midtop = self.text_image_rect.midbottom
-        self.score_text_rect.top += self.vertical_padding
+        # self.score_text_rect.midtop = self.text_image_rect.midbottom
+        # self.score_text_rect.top += self.vertical_padding
+        # self.score_number_rect.midtop = self.score_text_rect.midbottom
+        self.score_text_rect.midbottom = self.screen_rect.center
         self.score_number_rect.midtop = self.score_text_rect.midbottom
 
     def _create_menu_button(self):
@@ -943,8 +951,12 @@ class GameOver:
             Color(88, 115, 22),
         )
         # Set the position of the button just below the score
-        self.menu_btn.rect.midtop = self.score_number_rect.midbottom
-        self.menu_btn.rect.top += self.vertical_padding
+        # self.menu_btn.rect.midtop = self.score_number_rect.midbottom
+        # self.menu_btn.rect.top += self.vertical_padding
+        self.menu_btn.rect.midtop = (
+            self.screen_rect.centerx,
+            self.screen_rect.centery + self.vertical_padding,
+        )
 
     def draw(self) -> None:
         """Draw the game over screen and set the mouse visible."""
