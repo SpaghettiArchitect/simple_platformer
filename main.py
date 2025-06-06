@@ -494,6 +494,58 @@ class Door(Sprite):
         self.rect.bottomleft = coordinate
 
 
+class Arrow:
+    """Class to create a new arrow."""
+
+    def __init__(self, size: int, color: Color):
+        """Initialize a new arrow instance."""
+        self.size = size
+        self.color = color
+
+        # Defines the arrow surface and its rect
+        self.image = Surface((self.size, self.size), flags=pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+
+        # Creates the arrow figure
+        self._create_arrow()
+
+    def _create_arrow(self) -> None:
+        """Creates an arrow shape using lines."""
+        third_size = self.size / 3
+        pygame.draw.aaline(
+            self.image,
+            self.color,
+            self.rect.midleft,
+            self.rect.midright,
+        )
+        pygame.draw.aaline(
+            self.image,
+            self.color,
+            self.rect.midright,
+            (self.rect.right - third_size, self.rect.centery - third_size),
+        )
+        pygame.draw.aaline(
+            self.image,
+            self.color,
+            self.rect.midright,
+            (self.rect.right - third_size, self.rect.centery + third_size),
+        )
+
+    def rotate(self, angle: float) -> None:
+        """Rotates the arrow counterclockwise by the given angle.
+
+        - angle: a flot that indicates the angle of rotation.
+        """
+        self.image = pygame.transform.rotate(self.image, angle)
+
+    def blit_me(self, screen: Surface) -> None:
+        """Draw this arrow onto a given screen surface.
+
+        - screen: the surface to draw the arrow on.
+        """
+        screen.blit(self.image, self.rect)
+
+
 class Level:
     """A generic super-class used to define a level."""
 
@@ -1022,6 +1074,77 @@ class Player(Sprite):
             # Stop player's vertical movement
             self.change_y = 0
 
+    def _create_key_arrows(self) -> None:
+        """Helper method to create the arrows that will be shown
+        around the player.
+        """
+        arrow_color = self.settings.FONT_COLOR
+        self._right_arrow = Arrow(25, arrow_color)
+        self._up_arrow = Arrow(25, arrow_color)
+        self._up_arrow.rotate(90)
+        self._left_arrow = Arrow(25, arrow_color)
+        self._left_arrow.rotate(180)
+
+    def _position_key_arrows(self) -> None:
+        """Helper method to position each arrow around the player."""
+        self._right_arrow.rect.midleft = self.rect.midright
+        self._up_arrow.rect.midbottom = self.rect.midtop
+        self._left_arrow.rect.midright = self.rect.midleft
+
+    def _create_key_texts(self) -> None:
+        """Helper method to create the text for each key that the
+        player can press.
+        """
+        text_color = self.settings.FONT_COLOR
+        font = pygame.font.SysFont(None, 24)
+
+        # Create the text images for each key
+        self._text_A = font.render("A", True, text_color)
+        self._text_D = font.render("D", True, text_color)
+        self._text_SPACE = font.render("SPACE", True, text_color)
+
+        # Get the rect of each text image. This will be needed to
+        # position each text image onto the screen
+        self._text_A_rect = self._text_A.get_rect()
+        self._text_D_rect = self._text_D.get_rect()
+        self._text_SPACE_rect = self._text_SPACE.get_rect()
+
+    def _position_key_texts(self) -> None:
+        """Helper method to postition the text for each control key
+        around the player and besides each arrow.
+        """
+        text_padding = 10
+
+        # Position the text for each key where each arrow points
+        self._text_A_rect.midright = self._left_arrow.rect.midleft
+        self._text_D_rect.midleft = self._right_arrow.rect.midright
+        self._text_SPACE_rect.midbottom = self._up_arrow.rect.midtop
+
+        # Add a bit of padding to each key text so is easier to read
+        self._text_A_rect.centerx -= text_padding
+        self._text_D_rect.centerx += text_padding
+        self._text_SPACE_rect.centery -= text_padding
+
+    def _create_player_controls(self) -> None:
+        """Helper method to create and position the arrows and the text
+        for each control key around the player.
+        """
+        self._create_key_arrows()
+        self._position_key_arrows()
+        self._create_key_texts()
+        self._position_key_texts()
+
+    def show_player_controls(self) -> None:
+        """Draw the controls arround the player sprite."""
+        self._create_player_controls()
+
+        self._right_arrow.blit_me(self.screen)
+        self._up_arrow.blit_me(self.screen)
+        self._left_arrow.blit_me(self.screen)
+        self.screen.blit(self._text_D, self._text_D_rect)
+        self.screen.blit(self._text_SPACE, self._text_SPACE_rect)
+        self.screen.blit(self._text_A, self._text_A_rect)
+
 
 class Platformer:
     """The main platformer class, use to create and run the game."""
@@ -1329,6 +1452,8 @@ class Platformer:
         self.player.draw_me()
         if self.game_active:
             self.scoreboard.draw_score()
+        else:
+            self.player.show_player_controls()
         pygame.display.flip()
 
 
