@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 import pygame
 from pygame import Color, Surface, Vector2
@@ -16,6 +17,9 @@ class Settings:
         self.FPS = 60
         self.BG_COLOR = Color(18, 148, 199)
         self.GAME_TITLE = "Robot Platformer"
+
+        # File where the high score will be saved
+        self.FILE_PATH = Path("high_score.txt")
 
         # Player's settings
         self.player_speed = 5
@@ -1066,6 +1070,9 @@ class Platformer:
         self.current_level = self.menu
         self._set_player_on_level()
 
+        # Load the saved high score
+        self._load_high_score()
+
     def run_game(self) -> None:
         """Starts the main loop of the game."""
 
@@ -1087,6 +1094,9 @@ class Platformer:
         """Check and respond to all keypresses events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                # Save the current high score before quiting
+                self._save_high_score()
+                pygame.quit()
                 sys.exit()
 
             elif event.type == pygame.KEYDOWN:
@@ -1275,6 +1285,22 @@ class Platformer:
             self._set_player_on_level()
         else:
             self._show_game_over()
+
+    def _load_high_score(self) -> None:
+        """Load the current high score stored in high_score.txt, if the file
+        exists. In case the file doesn't yet exist, this will create it.
+        """
+        if self.settings.FILE_PATH.exists():
+            _, high_score = self.settings.FILE_PATH.read_text().split("=")
+            self.stats.high_score = int(high_score)
+            self.scoreboard.prep_high_score()
+        else:
+            self.settings.FILE_PATH.touch()
+
+    def _save_high_score(self) -> None:
+        """Save the current high score to a file."""
+        high_score_text = f"HIGH_SCORE={self.stats.high_score}"
+        self.settings.FILE_PATH.write_text(high_score_text)
 
     def _show_game_over(self) -> None:
         """End the current game, and show the game over screen."""
