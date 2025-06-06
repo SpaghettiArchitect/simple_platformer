@@ -49,6 +49,9 @@ class GameStats:
         self.settings = settings
         self.reset_statistics()
 
+        # The high score is never reset
+        self.high_score = 0
+
     def reset_statistics(self) -> None:
         """Initialize statistics that change during game execution."""
         self.lives_left = self.settings.PLAYER_LIVES
@@ -80,6 +83,7 @@ class Scoreboard:
 
         # Prepare initial score images
         self.prep_score()
+        self.prep_high_score()
         self.prep_hearts()
 
     def prep_score(self) -> None:
@@ -88,8 +92,16 @@ class Scoreboard:
         score_str = f"{self.stats.score:,}"
 
         # Score images that will be rendered
-        self.score_text = self.text_font.render(text_str, True, self.text_color)
-        self.score_number = self.score_font.render(score_str, True, self.text_color)
+        self.score_text = self.text_font.render(
+            text_str,
+            True,
+            self.text_color,
+        )
+        self.score_number = self.score_font.render(
+            score_str,
+            True,
+            self.text_color,
+        )
 
         # Display the score at the top-right side of the screen
         self.score_text_rect = self.score_text.get_rect()
@@ -100,15 +112,47 @@ class Scoreboard:
         self.score_number_rect = self.score_number.get_rect()
         self.score_number_rect.topright = self.score_text_rect.bottomright
 
+    def prep_high_score(self) -> None:
+        """Turn the high score into an image that can be displayed."""
+        high_score_text = "HIGH SCORE"
+        high_score_number = f"{self.stats.high_score:,}"
+        # The high score images that will be rendered
+        self.hs_text = self.text_font.render(
+            high_score_text,
+            True,
+            self.text_color,
+        )
+        self.hs_number = self.score_font.render(
+            high_score_number,
+            True,
+            self.text_color,
+        )
+
+        # Position the high score at the top-center of the screen
+        self.hs_text_rect = self.hs_text.get_rect()
+        self.hs_text_rect.midtop = (
+            self.screen_rect.centerx,
+            self.screen_rect.top + self.screen_padding,
+        )
+        self.hs_number_rect = self.hs_number.get_rect()
+        self.hs_number_rect.midtop = self.hs_text_rect.midbottom
+
     def prep_hearts(self) -> None:
         """Show how many lives are left."""
         # Text image that will be rendered above the hearts
         lives_str = "LIVES"
-        self.lives_text = self.text_font.render(lives_str, True, self.text_color)
+        self.lives_text = self.text_font.render(
+            lives_str,
+            True,
+            self.text_color,
+        )
 
         # Display the text at the top-left corner of the screen
         self.lives_text_rect = self.lives_text.get_rect()
-        self.lives_text_rect.topleft = (self.screen_padding, self.screen_padding)
+        self.lives_text_rect.topleft = (
+            self.screen_padding,
+            self.screen_padding,
+        )
 
         # Creates the heart that represent the player's lives
         self.hearts = Group()
@@ -116,18 +160,28 @@ class Scoreboard:
         for live_number in range(self.stats.lives_left):
             heart = Heart()
             # Position each heart just below the text
-            x_pos = self.screen_padding + heart_padding + live_number * heart.rect.width
+            left_padding = self.screen_padding + heart_padding
+            x_pos = left_padding + live_number * heart.rect.width
             y_pos = self.lives_text_rect.bottom
             heart.set_position(x_pos, y_pos)
             self.hearts.add(heart)
             heart_padding += 3  # Adds a small padding between each heart
 
     def draw_score(self) -> None:
-        """Draw score and lives left to the screen."""
+        """Draw scores and lives left to the screen."""
         self.screen.blit(self.score_text, self.score_text_rect)
         self.screen.blit(self.score_number, self.score_number_rect)
+        self.screen.blit(self.hs_text, self.hs_text_rect)
+        self.screen.blit(self.hs_number, self.hs_number_rect)
         self.screen.blit(self.lives_text, self.lives_text_rect)
         self.hearts.draw(self.screen)
+
+    def check_high_score(self) -> None:
+        """Check if the current score is bigger than the
+        high score. If so, set the new high score."""
+        if self.stats.score > self.stats.high_score:
+            self.stats.high_score = self.stats.score
+            self.prep_high_score()
 
 
 class Button(Sprite):
@@ -747,7 +801,7 @@ class Level_02(Level):
         self.level_pattern = [
             "_#CCCCE#_P#CCCCE##CCE##CCCE##CCCCCE##CCCCE##CCECCC#",
             "__XXXXX__XXXXXXX__XXX__XXXX__XXXXXX__XXXXX__XXXXXXX",
-            "___________________________________________________",
+            "",
             "#CCE##CCCE#__#CCCCE#___#CCCE##CCCCCE#___#CCCCE#___D",
             "_XXX__XXXX____XXXXX_____XXXX__XXXXXX_____XXXXX___CC",
             "_________________________________________________XX",
@@ -772,6 +826,9 @@ class GameOver:
         self.screen_rect = self.screen.get_rect()
         self.stats = stats
 
+        # Padding between each element
+        self.vertical_padding = 20
+
         self._create_game_over_text()
         self._create_score_text()
         self._create_menu_button()
@@ -792,19 +849,33 @@ class GameOver:
     def _create_score_text(self) -> None:
         """Creates the score text image and sets its position."""
         score_font = pygame.font.SysFont(None, 32)
-        score_text = f"Your score: {self.stats.score}"
 
-        # Create the score image
-        self.score_image = score_font.render(
+        if self.stats.score < self.stats.high_score:
+            score_text = "Your score:"
+        else:
+            score_text = "NEW HIGHSCORE:"
+
+        score_number = f"{self.stats.score:,}"
+
+        # Create the score images
+        self.score_text = score_font.render(
             score_text,
             True,
             Color(255, 255, 255),
         )
-        self.score_image_rect = self.score_image.get_rect()
+        self.score_text_rect = self.score_text.get_rect()
+
+        self.score_number = score_font.render(
+            score_number,
+            True,
+            Color(255, 255, 255),
+        )
+        self.score_number_rect = self.score_number.get_rect()
 
         # Set the position of the score below the game over title
-        self.score_image_rect.midtop = self.text_image_rect.midbottom
-        self.score_image_rect.top += 20
+        self.score_text_rect.midtop = self.text_image_rect.midbottom
+        self.score_text_rect.top += self.vertical_padding
+        self.score_number_rect.midtop = self.score_text_rect.midbottom
 
     def _create_menu_button(self):
         """Creates the menu button and sets its position."""
@@ -816,14 +887,15 @@ class GameOver:
             Color(88, 115, 22),
         )
         # Set the position of the button just below the score
-        self.menu_btn.rect.midtop = self.score_image_rect.midbottom
-        self.menu_btn.rect.top += 30
+        self.menu_btn.rect.midtop = self.score_number_rect.midbottom
+        self.menu_btn.rect.top += self.vertical_padding
 
     def draw(self) -> None:
         """Draw the game over screen and set the mouse visible."""
         self.screen.fill(Color(30, 30, 30))
         self.screen.blit(self.text_image, self.text_image_rect)
-        self.screen.blit(self.score_image, self.score_image_rect)
+        self.screen.blit(self.score_text, self.score_text_rect)
+        self.screen.blit(self.score_number, self.score_number_rect)
         self.screen.blit(self.menu_btn.image, self.menu_btn.rect)
         pygame.mouse.set_visible(True)
         pygame.display.flip()
@@ -1125,6 +1197,7 @@ class Platformer:
         for _ in coins_hit_list:
             self.stats.score += self.settings.COIN_POINTS
             self.scoreboard.prep_score()
+            self.scoreboard.check_high_score()
 
     def _check_player_door_collision(self) -> None:
         """Check if the player has collided with the level's door."""
@@ -1151,6 +1224,7 @@ class Platformer:
         self.player.bounce()  # Make a little jump
         self.stats.score += self.settings.ENEMY_POINTS
         self.scoreboard.prep_score()
+        self.scoreboard.check_high_score()
         enemy.kill()
 
     def _player_hit(self) -> None:
