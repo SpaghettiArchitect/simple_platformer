@@ -1115,18 +1115,18 @@ class Platformer:
 
     def _check_keydown_events(self, event: pygame.event.Event) -> None:
         """Respond to keypresses."""
-        if event.key == pygame.K_RIGHT:
+        if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
             self.player.moving_right = True
-        elif event.key == pygame.K_LEFT:
+        elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
             self.player.moving_left = True
-        elif event.key == pygame.K_SPACE:
+        elif event.key == pygame.K_UP or event.key == pygame.K_SPACE:
             self.player.jump()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
         """Respond to key releases"""
-        if event.key == pygame.K_RIGHT:
+        if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
             self.player.moving_right = False
-        elif event.key == pygame.K_LEFT:
+        elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
             self.player.moving_left = False
 
     def _check_start_button(self, mouse_pos: tuple[int, int]) -> None:
