@@ -764,12 +764,22 @@ class MainMenu(Level):
         self.screen_rect = self.screen.get_rect()
         self.settings = settings
 
-        # This colors will be needed to create buttons and text
+        # Colors that will be used for this screen
         self.bg_color = Color(30, 30, 30)
+        self.block_color = Color(68, 69, 69)
         self.text_color = self.settings.FONT_COLOR
 
         # The pattern for this level
         self.level_pattern = [
+            "X___XXX___XXX__XX",
+            "X____X______X___X",
+            "X_______________X",
+            "X",
+            "",
+            "",
+            "____X________X___",
+            "___XX________XX__",
+            "___X_________X___",
             "X_______________X",
             "XX______P______XX",
             "XXXXXXXXXXXXXXXXX",
@@ -797,7 +807,7 @@ class MainMenu(Level):
         # Position the image in the screen
         self.title_image_rect.center = (
             self.screen_rect.centerx,
-            self.screen_rect.top + self.screen_rect.height / 4,
+            self.screen_rect.top + self.screen_rect.height / 3,
         )
 
     def _create_title_hearts(self) -> None:
