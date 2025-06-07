@@ -23,7 +23,7 @@ class Settings:
 
         # Player's settings
         self.player_speed = 5
-        self.PLAYER_LIVES = 5
+        self.PLAYER_LIVES = 6
 
         # Block's settings
         self.BLOCK_SIZE = 50
@@ -41,7 +41,7 @@ class Settings:
 
         # Limits how far the player can go to the left
         # or right side of the screen until it starts to shift
-        self.LEFT_SCREEN_LIMIT = 100
+        self.LEFT_SCREEN_LIMIT = 150
         self.RIGHT_SCREEN_LIMIT = self.SCREEN_WIDTH - 200
 
 
@@ -833,15 +833,15 @@ class Level_01(Level):
 
         # The level layout
         self.level_pattern = [
-            "___________________________D____",
-            "CCCC_____CC________C_______X____",
-            "XXX_C___C__C______C#ECCC#_______",
-            "____C__C____C____C__XXXXC_______",
-            "___#CCEC#__#CCECC#_____XXC_#ECC#",
-            "____XXXX____XXXXXC______XXC_XXX_",
-            "_________________C________C_____",
-            "_P_CCCC_____#CCCEC#__#ECCCCC#___",
-            "XXXXXXX______XXXXX____XXXXXX____",
+            "____C_______________________DC___",
+            "#ECC#C__#CCCE#___#CCCE#_____XC___",
+            "XXXX_C__CXXXXC___CXXXX_______XCC_",
+            "_____C__C____C___C____________XC_",
+            "____#CCEC#CC#CCECC#___#CECC#___C_",
+            "_____XXXX_CC_XXXXXC____XXXXC___CC",
+            "__________CC______C________C__CCX",
+            "P_#CCE#_#ECCC#CCCEC#__#ECCCC#_XXX",
+            "XXXXXX___XXXX_XXXXX____XXXXX_____",
         ]
 
         # Create the level
@@ -866,6 +866,29 @@ class Level_02(Level):
             "_________________________________________________XX",
             "#CCCE##CCCE#__#CCCCE#_#CCCE#__#CCCCCE#____#CCCE#___",
             "_XXXX__XXXX____XXXXX___XXXX____XXXXXX______XXXX____",
+        ]
+
+        # Create the level
+        self._create(self.level_pattern)
+
+
+class Level_03(Level):
+    def __init__(self, screen: Surface, settings: Settings):
+        """Creates level 1 of the game."""
+        super().__init__(screen, settings)
+
+        # The level layout
+        self.level_pattern = [
+            "_______#CCE#______#ECCCCE#____________#ECCC#________",
+            "________XXX________XXXXXXC_______CC____XXXXC________",
+            "___CC_______#CCE#________X_______XXC_______X_#CCE#P_",
+            "___XX________XXX__________#ECCC#___X__________XXXXX_",
+            "______#CEC#_____#CECCC#____XXXX______#CECC#_________",
+            "_______XXX_______XXXXX___________CC___XXXXC_________",
+            "X__CC______#CCE#_______#CCCE#____XXC______X_#CCCCE#_",
+            "___XX_______XXX_________XXXX_______X_________XXXXX__",
+            "D____#ECC#________#CCEC#____________#CCEC#__________",
+            "XX____XXX__________XXXX______________XXXX___________",
         ]
 
         # Create the level
@@ -1403,6 +1426,7 @@ class Platformer:
         self.level_list.clear()
         self.level_list.append(Level_01(self.screen, self.settings))
         self.level_list.append(Level_02(self.screen, self.settings))
+        self.level_list.append(Level_03(self.screen, self.settings))
         self.current_level = self.level_list[self.stats.level]
 
     def _set_player_on_level(self) -> None:

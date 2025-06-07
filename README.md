@@ -21,4 +21,4 @@ the advanced section of [Python Programming MOOC 2025](https://programming-25.mo
       there aren't any levels left).
 - [x] Add door to end the level.
 - [x] Implement starting screen.
-- [ ] Add new levels.
+- [x] Add new levels.
