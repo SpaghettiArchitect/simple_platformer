@@ -23,7 +23,7 @@ class Settings:
 
         # Player's settings
         self.player_speed = 5
-        self.PLAYER_LIVES = 6
+        self.PLAYER_LIVES = 5
 
         # Block's settings
         self.BLOCK_SIZE = 50
@@ -35,6 +35,9 @@ class Settings:
 
         # Coin's settings
         self.COIN_POINTS = 100
+
+        # Heart's settings
+        self.HEART_POINTS = 400
 
         # Font settings
         self.FONT_COLOR = Color(255, 255, 255)
@@ -1439,11 +1442,30 @@ class Platformer:
         If there isn't any level left, show the game over screen.
         """
         if self.stats.level + 1 < len(self.level_list):
+            self._add_hearts_left_to_score()
             self.stats.level += 1
             self.current_level = self.level_list[self.stats.level]
             self._set_player_on_level()
+            self._prep_scoreboard()
         else:
+            self._add_hearts_left_to_score()
             self._show_game_over()
+
+    def _add_hearts_left_to_score(self) -> None:
+        """Helper method to add the lives left to the score at the end
+        of a level. Also, resets the total number of lives for the next
+        level.
+        """
+        self.stats.score += self.stats.lives_left * self.settings.HEART_POINTS
+        self.stats.lives_left = self.settings.PLAYER_LIVES
+        self.scoreboard.check_high_score()
+
+    def _prep_scoreboard(self) -> None:
+        """Prepares the scoreboard when a new level is loaded."""
+        self.scoreboard.prep_score()
+        self.scoreboard.prep_hearts()
+        self.scoreboard.check_high_score()
+        self.scoreboard.prep_high_score()
 
     def _load_high_score(self) -> None:
         """Load the current high score stored in high_score.txt, if the file
