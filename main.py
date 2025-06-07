@@ -856,8 +856,8 @@ class Level_02(Level):
         """Creates level 1 of the game."""
         super().__init__(screen, settings)
 
-        self.bg_color = Color(163, 147, 191)
-        self.block_color = Color(97, 63, 117)
+        self.bg_color = Color(176, 196, 177)
+        self.block_color = Color(74, 87, 89)
 
         # The level layout
         self.level_pattern = [
@@ -879,6 +879,9 @@ class Level_03(Level):
     def __init__(self, screen: Surface, settings: Settings):
         """Creates level 1 of the game."""
         super().__init__(screen, settings)
+
+        self.bg_color = Color(0, 121, 140)
+        self.block_color = Color(46, 31, 39)
 
         # The level layout
         self.level_pattern = [
