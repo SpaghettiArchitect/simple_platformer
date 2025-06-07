@@ -838,13 +838,13 @@ class Level_01(Level):
 
         # The level layout
         self.level_pattern = [
-            "____C_______________________DC___",
-            "#ECC#C__#CCCE#___#CCCE#_____XC___",
+            "____C_______________________D____",
+            "#ECC#C__#CCCE#___#CCCE#_____XCC__",
             "XXXX_C__CXXXXC___CXXXX_______XCC_",
-            "_____C__C____C___C____________XC_",
-            "____#CCEC#CC#CCECC#___#CECC#___C_",
-            "_____XXXX_CC_XXXXXC____XXXXC___CC",
-            "__________CC______C________C__CCX",
+            "_____C__C____C___C____________XCC",
+            "____#CCEC#CC#CCECC#___#CECC#___CC",
+            "_____XXXX_CC_XXXXXC____XXXXC___CX",
+            "__________CC______C________C__CXX",
             "P_#CCE#_#ECCC#CCCEC#__#ECCCC#_XXX",
             "XXXXXX___XXXX_XXXXX____XXXXX_____",
         ]
