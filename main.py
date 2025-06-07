@@ -766,7 +766,7 @@ class MainMenu(Level):
 
         # This colors will be needed to create buttons and text
         self.bg_color = Color(30, 30, 30)
-        self.text_color = Color(255, 255, 255)
+        self.text_color = self.settings.FONT_COLOR
 
         # The pattern for this level
         self.level_pattern = [
@@ -916,6 +916,8 @@ class GameOver:
         self.screen_rect = self.screen.get_rect()
         self.stats = stats
 
+        self.text_color = Color(255, 255, 255)
+
         # Padding between each element
         self.vertical_padding = 50
 
@@ -954,14 +956,14 @@ class GameOver:
         self.score_text = score_font.render(
             score_text,
             True,
-            Color(255, 255, 255),
+            self.text_color,
         )
         self.score_text_rect = self.score_text.get_rect()
 
         self.score_number = score_font.render(
             score_number,
             True,
-            Color(255, 255, 255),
+            self.text_color,
         )
         self.score_number_rect = self.score_number.get_rect()
 
@@ -978,7 +980,7 @@ class GameOver:
         self.menu_btn = Button(
             "GO TO MAIN MENU",
             32,
-            Color(255, 255, 255),
+            self.text_color,
             Color(88, 115, 22),
         )
         # Set the position of the button just below the score
