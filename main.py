@@ -855,7 +855,7 @@ class Level_01(Level):
             "____#CCEC#CC#CCECC#___#CECC#___CC",
             "_____XXXX_CC_XXXXXC____XXXXC___CX",
             "__________CC______C________C__CXX",
-            "P_#CCE#_#ECCC#CCCEC#__#ECCCC#_XXX",
+            "P#CCCE#_#ECCC#CCCEC#__#ECCCC#_XXX",
             "XXXXXX___XXXX_XXXXX____XXXXX_____",
         ]
 
@@ -873,11 +873,11 @@ class Level_02(Level):
 
         # The level layout
         self.level_pattern = [
-            "_#CCCCE#_P#CCCCE##CCE##CCCE##CCCCCE##CCCCE##CCECCC#",
-            "__XXXXX__XXXXXXX__XXX__XXXX__XXXXXX__XXXXX__XXXXXXX",
+            "P_#CCCE##CCCCCCE##CCE##CCCE##CCCCCE##CCCCE##CCECCC#",
+            "X__XXXX__XXXXXXX__XXX__XXXX__XXXXXX__XXXXX__XXXXXXX",
             "",
-            "#CCE##CCCE#__#CCCCE#___#CCCE##CCCCCE#___#CCCCE#___D",
-            "_XXX__XXXX____XXXXX_____XXXX__XXXXXX_____XXXXX___CC",
+            "#CCE##CCCE#__#CCCCE#___#CCCE##CCCCCE#___#CCCCE#____",
+            "_XXX__XXXX____XXXXX_____XXXX__XXXXXX_____XXXXX____D",
             "_________________________________________________XX",
             "#CCCE##CCCE#__#CCCCE#_#CCCE#__#CCCCCE#____#CCCE#___",
             "_XXXX__XXXX____XXXXX___XXXX____XXXXXX______XXXX____",
