@@ -81,7 +81,9 @@ class Scoreboard:
         self.settings = settings
         self.stats = stats
 
-        self.screen_padding = 10
+        # This padding will separate the scoreboard elements from the
+        # screen corners
+        self.screen_padding = 20
 
         # Font settings to display information
         self.text_color = self.settings.FONT_COLOR
