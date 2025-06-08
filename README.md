@@ -3,7 +3,22 @@
 This is a simple platformer game using pygame. It's my final project for
 the advanced section of [Python Programming MOOC 2025](https://programming-25.mooc.fi/).
 
-## TO DO
+## How to run?
+
+1. Download and install **uv** from the [astral website](https://docs.astral.sh/uv/getting-started/installation/).
+
+2. Clone this repository to your computer.
+
+3. Open the project directory on a terminal and type the following, then press enter:
+
+```shell
+uv run main.py
+```
+
+**uv** will take care of installing the correct python version, the correct pygame package and running the game, all
+with just one command.
+
+## TO DO (COMPLETED)
 
 - [x] Add initial window.
 - [x] Add robot player to window.
